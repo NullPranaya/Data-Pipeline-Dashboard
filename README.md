@@ -1,3 +1,3 @@
 # Data-Pipeline-Dashboard
-Try1 using
+Try1 
 Python, SQL, PostgreSQL
