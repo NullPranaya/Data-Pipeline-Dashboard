@@ -3,7 +3,13 @@
     "allow": [
       "Bash(pip install:*)",
       "Bash(python3:*)",
-      "Bash(brew services list)"
+      "Bash(brew services list)",
+      "Bash(cd:*)",
+      "Bash(psql:*)",
+      "Bash(/Library/PostgreSQL/18/bin/psql -U postgres -d pipeline_db -f \"/Users/pranayasigdel/Documents/Datapipeline Dashboard/schema.sql\" 2>&1)",
+      "Bash(PGPASSWORD=Stanford00 /Library/PostgreSQL/18/bin/psql -U postgres -d pipeline_db -f \"/Users/pranayasigdel/Documents/Datapipeline Dashboard/schema.sql\" 2>&1)",
+      "Bash(PGPASSWORD=Stanford00 /Library/PostgreSQL/18/bin/psql -U postgres -h localhost -p 5432 -d pipeline_db -f \"/Users/pranayasigdel/Documents/Datapipeline Dashboard/schema.sql\" 2>&1)",
+      "Bash(PGPASSWORD=Stanford00 /Library/PostgreSQL/18/bin/psql -U postgres -h localhost -p 5432 -c \"CREATE DATABASE pipeline_db;\" 2>&1 && PGPASSWORD=Stanford00 /Library/PostgreSQL/18/bin/psql -U postgres -h localhost -p 5432 -d pipeline_db -f \"/Users/pranayasigdel/Documents/Datapipeline Dashboard/schema.sql\" 2>&1)"
     ]
   }
 }

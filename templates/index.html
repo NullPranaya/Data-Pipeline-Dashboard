@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather Pipeline Dashboard</title>
+  <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --border:   #2a2d3e;
+      --accent:   #6c63ff;
+      --accent2:  #00d4aa;
+      --danger:   #ff4d6d;
+      --warn:     #ffa94d;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --font:     'Segoe UI', system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    header h1 span { color: var(--accent); }
+
+    #last-update {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* ── City cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 16px;
+      cursor: pointer;
+      transition: border-color .2s, transform .15s;
+    }
+
+    .card:hover, .card.active {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .card .city-name {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .card .temp {
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--accent);
+    }
+
+    .card .meta {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    /* ── Charts grid ── */
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .chart-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .chart-box h2 {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 12px;
+    }
+
+    /* ── Anomaly log ── */
+    .anomaly-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .anomaly-section h2 {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #anomaly-count {
+      background: var(--danger);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 99px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    th {
+      text-align: left;
+      color: var(--muted);
+      padding: 6px 10px;
+      font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 600;
+    }
+
+    .badge-temp  { background: #6c63ff22; color: #a89ff9; }
+    .badge-hum   { background: #00d4aa22; color: #00d4aa; }
+    .badge-wind  { background: #ffa94d22; color: #ffa94d; }
+    .badge-up    { background: #ff4d6d22; color: #ff4d6d; }
+    .badge-down  { background: #4daaff22; color: #4daaff; }
+
+    .no-data { color: var(--muted); font-size: 0.85rem; padding: 20px 0; }
+
+    @media (max-width: 768px) {
+      .charts { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Weather <span>Pipeline</span> Dashboard</h1>
+  <span id="last-update">Loading…</span>
+</header>
+
+<!-- City Cards -->
+<div class="cards" id="cards"></div>
+
+<!-- Charts -->
+<div class="charts">
+  <div class="chart-box">
+    <h2>Temperature — Last 24h (all cities)</h2>
+    <div id="chart-temp" style="height:260px"></div>
+  </div>
+  <div class="chart-box">
+    <h2>Humidity — Last 24h (all cities)</h2>
+    <div id="chart-hum" style="height:260px"></div>
+  </div>
+  <div class="chart-box">
+    <h2>Wind Speed — Last 24h (all cities)</h2>
+    <div id="chart-wind" style="height:260px"></div>
+  </div>
+  <div class="chart-box">
+    <h2>City Detail — click a card above</h2>
+    <div id="chart-detail" style="height:260px"></div>
+  </div>
+</div>
+
+<!-- Anomaly Log -->
+<div class="anomaly-section">
+  <h2>Anomaly Log <span id="anomaly-count">0</span></h2>
+  <table>
+    <thead>
+      <tr>
+        <th>City</th>
+        <th>Metric</th>
+        <th>Value</th>
+        <th>Z-score</th>
+        <th>Reading Time</th>
+        <th>Detected</th>
+      </tr>
+    </thead>
+    <tbody id="anomaly-body">
+      <tr><td colspan="6" class="no-data">No anomalies yet.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+const PLOTLY_LAYOUT = {
+  paper_bgcolor: 'transparent',
+  plot_bgcolor:  'transparent',
+  font:  { color: '#64748b', size: 11 },
+  xaxis: { gridcolor: '#2a2d3e', linecolor: '#2a2d3e', tickfont: { size: 10 } },
+  yaxis: { gridcolor: '#2a2d3e', linecolor: '#2a2d3e', tickfont: { size: 10 } },
+  legend: { bgcolor: 'transparent', font: { size: 10 } },
+  margin: { t: 10, r: 10, b: 36, l: 42 },
+  hovermode: 'x unified',
+};
+
+const CITY_COLORS = {
+  'New York City': '#6c63ff',
+  'Los Angeles':   '#00d4aa',
+  'Chicago':       '#ffa94d',
+  'London':        '#ff4d6d',
+  'Tokyo':         '#4daaff',
+};
+
+const METRIC_UNITS = {
+  temperature_c:  '°C',
+  humidity_pct:   '%',
+  wind_speed_kmh: ' km/h',
+};
+
+let selectedCity = null;
+let trendsData    = [];
+
+// ── Fetch & render everything ──────────────────────────────────────────────
+
+async function refresh() {
+  const [current, trends, anomalies] = await Promise.all([
+    fetch('/api/current').then(r => r.json()),
+    fetch('/api/trends').then(r => r.json()),
+    fetch('/api/anomalies').then(r => r.json()),
+  ]);
+
+  trendsData = trends;
+  renderCards(current);
+  renderTrendCharts(trends);
+  renderAnomalies(anomalies);
+  document.getElementById('last-update').textContent =
+    'Last updated: ' + new Date().toLocaleTimeString();
+}
+
+// ── City cards ──────────────────────────────────────────────────────────────
+
+function renderCards(current) {
+  const container = document.getElementById('cards');
+  container.innerHTML = '';
+  current.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'card' + (c.location === selectedCity ? ' active' : '');
+    div.innerHTML = `
+      <div class="city-name">${c.location}</div>
+      <div class="temp" style="color:${CITY_COLORS[c.location] || '#6c63ff'}">
+        ${c.temperature_c != null ? c.temperature_c.toFixed(1) + '°C' : 'N/A'}
+      </div>
+      <div class="meta">
+        <span>💧 ${c.humidity_pct != null ? c.humidity_pct.toFixed(0) + '%' : 'N/A'}</span>
+        <span>💨 ${c.wind_speed_kmh != null ? c.wind_speed_kmh.toFixed(1) + ' km/h' : 'N/A'}</span>
+      </div>`;
+    div.addEventListener('click', () => selectCity(c.location));
+    container.appendChild(div);
+  });
+}
+
+function selectCity(city) {
+  selectedCity = city;
+  document.querySelectorAll('.card').forEach(el => {
+    el.classList.toggle('active', el.querySelector('.city-name').textContent === city);
+  });
+  renderDetailChart(city);
+}
+
+// ── Trend charts ────────────────────────────────────────────────────────────
+
+function buildTraces(metric) {
+  const byCity = {};
+  trendsData.forEach(r => {
+    if (!byCity[r.location]) byCity[r.location] = { x: [], y: [] };
+    byCity[r.location].x.push(r.reading_time);
+    byCity[r.location].y.push(r[metric]);
+  });
+  return Object.entries(byCity).map(([city, d]) => ({
+    type: 'scatter', mode: 'lines',
+    name: city, x: d.x, y: d.y,
+    line: { color: CITY_COLORS[city] || '#aaa', width: 2 },
+  }));
+}
+
+function renderTrendCharts(trends) {
+  const layout = { ...PLOTLY_LAYOUT };
+  Plotly.react('chart-temp',  buildTraces('temperature_c'),  { ...layout, yaxis: { ...layout.yaxis, title: '°C' } },  { responsive: true, displayModeBar: false });
+  Plotly.react('chart-hum',   buildTraces('humidity_pct'),   { ...layout, yaxis: { ...layout.yaxis, title: '%' } },   { responsive: true, displayModeBar: false });
+  Plotly.react('chart-wind',  buildTraces('wind_speed_kmh'), { ...layout, yaxis: { ...layout.yaxis, title: 'km/h' } }, { responsive: true, displayModeBar: false });
+}
+
+// ── City detail chart ────────────────────────────────────────────────────────
+
+function renderDetailChart(city) {
+  const rows = trendsData.filter(r => r.location === city);
+  const color = CITY_COLORS[city] || '#6c63ff';
+
+  const traces = [
+    { type: 'scatter', mode: 'lines', name: 'Temp (°C)',    x: rows.map(r => r.reading_time), y: rows.map(r => r.temperature_c),  line: { color, width: 2 }, yaxis: 'y' },
+    { type: 'scatter', mode: 'lines', name: 'Humidity (%)', x: rows.map(r => r.reading_time), y: rows.map(r => r.humidity_pct),   line: { color: '#00d4aa', width: 1.5, dash: 'dot' }, yaxis: 'y2' },
+  ];
+
+  const layout = {
+    ...PLOTLY_LAYOUT,
+    title: { text: city, font: { color: '#e2e8f0', size: 13 } },
+    yaxis:  { ...PLOTLY_LAYOUT.yaxis, title: '°C' },
+    yaxis2: { ...PLOTLY_LAYOUT.yaxis, title: '%', overlaying: 'y', side: 'right' },
+    margin: { ...PLOTLY_LAYOUT.margin, r: 48 },
+    legend: { ...PLOTLY_LAYOUT.legend, orientation: 'h', y: -0.15 },
+  };
+
+  Plotly.react('chart-detail', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+// ── Anomalies ────────────────────────────────────────────────────────────────
+
+const METRIC_BADGE = {
+  temperature_c:  ['Temperature', 'badge-temp'],
+  humidity_pct:   ['Humidity',    'badge-hum'],
+  wind_speed_kmh: ['Wind Speed',  'badge-wind'],
+};
+
+function renderAnomalies(anomalies) {
+  document.getElementById('anomaly-count').textContent = anomalies.length;
+  const tbody = document.getElementById('anomaly-body');
+  if (!anomalies.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-data">No anomalies yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = anomalies.map(a => {
+    const [label, cls] = METRIC_BADGE[a.metric] || [a.metric, ''];
+    const dirClass = a.z_score > 0 ? 'badge-up' : 'badge-down';
+    const dir      = a.z_score > 0 ? '▲' : '▼';
+    const unit     = METRIC_UNITS[a.metric] || '';
+    const readTime = new Date(a.reading_time).toLocaleString();
+    const detTime  = new Date(a.detected_at).toLocaleString();
+    return `
+      <tr>
+        <td>${a.city}</td>
+        <td><span class="badge ${cls}">${label}</span></td>
+        <td>${a.value.toFixed(1)}${unit}</td>
+        <td><span class="badge ${dirClass}">${dir} ${Math.abs(a.z_score).toFixed(2)}σ</span></td>
+        <td>${readTime}</td>
+        <td>${detTime}</td>
+      </tr>`;
+  }).join('');
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+
+refresh();
+setInterval(refresh, 60_000);   // auto-refresh every 60s
+</script>
+</body>
+</html>
