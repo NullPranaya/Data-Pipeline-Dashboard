@@ -1,27 +1,23 @@
 # Weather Data Pipeline Dashboard
 
-A real-time weather data pipeline with an anomaly detection engine and a live web dashboard. It automatically fetches hourly weather data for 5 cities, stores it in PostgreSQL, flags statistical anomalies, and displays everything on an interactive dashboard.
-
----
+A real-time weather data pipeline I built with anomaly detection and a live web dashboard. It automatically fetches hourly weather data for 5 cities, stores it in PostgreSQL, flags statistical anomalies, and displays everything on an interactive dashboard.
 
 ## What It Does
 
-- **Fetches** hourly weather data (temperature, humidity, wind speed) for 5 cities from the [Open-Meteo API](https://open-meteo.com/) — free, no API key required.
-- **Stores** the data in a PostgreSQL database using an upsert so re-runs never create duplicates.
-- **Detects anomalies** using a rolling z-score (|z| >= 2.5 over a 48-hour window) and logs them to the database.
-- **Alerts** via Slack (optional) whenever an anomaly is detected.
-- **Serves** a dark-themed Flask dashboard with Plotly charts that auto-refreshes every 60 seconds.
+- **Fetches** hourly weather data (temperature, humidity, wind speed) for 5 cities from the [Open-Meteo API](https://open-meteo.com/) (free, no API key needed)
+- **Stores** everything in a PostgreSQL database using an upsert so re-runs never create duplicates
+- **Detects anomalies** using a rolling z-score (|z| >= 2.5 over a 48-hour window) and logs them to the database
+- **Sends Slack alerts** (optional) whenever an anomaly is detected
+- **Serves** a dark-themed Flask dashboard with Plotly charts that auto-refreshes every 60 seconds
 
 **Cities tracked:** New York City, Los Angeles, Chicago, London, Tokyo
-
----
 
 ## Project Structure
 
 ```
 .
-├── run.py           # Entry point — starts the scheduler + Flask server together
-├── pipeline.py      # ETL logic: extract → transform → load
+├── run.py           # Entry point, starts the scheduler + Flask server together
+├── pipeline.py      # ETL logic: extract, transform, load
 ├── anomaly.py       # Z-score anomaly detection
 ├── alerts.py        # Slack alert sender
 ├── app.py           # Flask web server + REST API endpoints
@@ -31,8 +27,6 @@ A real-time weather data pipeline with an anomaly detection engine and a live we
 └── templates/
     └── index.html   # Dashboard UI (Plotly + vanilla JS)
 ```
-
----
 
 ## Setup
 
@@ -76,9 +70,7 @@ Set the `SLACK_WEBHOOK_URL` environment variable to your Slack incoming webhook 
 export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."
 ```
 
-If this variable is not set, anomalies are only printed to the console.
-
----
+If this variable isn't set, anomalies just get printed to the console instead.
 
 ## Running
 
@@ -87,22 +79,16 @@ python run.py
 ```
 
 This does two things at once:
-1. Runs the pipeline immediately, then re-runs it every hour in the background.
-2. Starts the Flask web server on `http://localhost:5050`.
+1. Runs the pipeline immediately, then re-runs it every hour in the background
+2. Starts the Flask web server on `http://localhost:5050`
 
-Open `http://localhost:5050` in your browser to see the dashboard.
-
-To stop, press `Ctrl+C`.
-
----
+Open `http://localhost:5050` in your browser to see the dashboard. Press `Ctrl+C` to stop.
 
 ## Running the Pipeline Manually (without the server)
 
 ```bash
 python pipeline.py
 ```
-
----
 
 ## Dashboard Features
 
@@ -115,8 +101,6 @@ python pipeline.py
 
 The dashboard auto-refreshes every 60 seconds.
 
----
-
 ## API Endpoints
 
 | Endpoint | Description |
@@ -126,11 +110,9 @@ The dashboard auto-refreshes every 60 seconds.
 | `GET /api/trends` | Last 24h data for all cities (used by the multi-line chart) |
 | `GET /api/anomalies` | 50 most recent anomalies |
 
----
-
 ## Database Schema
 
-**`weather_readings`** — one row per city per hour (upserted on conflict):
+**`weather_readings`** - one row per city per hour (upserted on conflict):
 
 | Column | Type | Description |
 |---|---|---|
@@ -140,7 +122,7 @@ The dashboard auto-refreshes every 60 seconds.
 | humidity_pct | FLOAT | Relative humidity % |
 | wind_speed_kmh | FLOAT | Wind speed in km/h |
 
-**`anomalies`** — one row per detected anomaly:
+**`anomalies`** - one row per detected anomaly:
 
 | Column | Type | Description |
 |---|---|---|
@@ -151,13 +133,11 @@ The dashboard auto-refreshes every 60 seconds.
 | reading_time | TIMESTAMPTZ | When the reading occurred |
 | detected_at | TIMESTAMPTZ | When the anomaly was logged |
 
----
-
 ## Tech Stack
 
-- **Python** — pipeline, anomaly detection, scheduling
-- **PostgreSQL** — data storage
-- **Flask** — web server and REST API
-- **Plotly.js** — interactive charts
-- **NumPy** — z-score calculations
-- **Open-Meteo API** — free weather data source (no key needed)
+- **Python** for the pipeline, anomaly detection, and scheduling
+- **PostgreSQL** for data storage
+- **Flask** for the web server and REST API
+- **Plotly.js** for interactive charts
+- **NumPy** for z-score calculations
+- **Open-Meteo API** for free weather data (no key needed)
