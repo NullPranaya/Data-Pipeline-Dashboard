@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Weather Pipeline Dashboard</title>
+  <title>Weather Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
@@ -11,29 +11,28 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #080b14;
-      --surface:  #111827;
-      --surface2: #1a2035;
-      --border:   #1e2d45;
-      --accent:   #6366f1;
-      --accent2:  #06b6d4;
-      --danger:   #ef4444;
-      --success:  #10b981;
-      --text:     #f1f5f9;
-      --muted:    #64748b;
-      --muted2:   #94a3b8;
-      --font:     'Inter', system-ui, sans-serif;
+      --bg:      #0f1117;
+      --card:    #181c27;
+      --border:  #252c3d;
+      --text:    #e8eaf0;
+      --muted:   #5c6680;
+      --muted2:  #8892aa;
+      --blue:    #6c8aff;
+      --cyan:    #22d3ee;
+      --green:   #34d399;
+      --amber:   #fbbf24;
+      --red:     #f87171;
+      --font:    'Inter', system-ui, sans-serif;
     }
 
     body {
       background: var(--bg);
-      background-image:
-        radial-gradient(ellipse at 20% 0%, rgba(99,102,241,0.07) 0%, transparent 55%),
-        radial-gradient(ellipse at 80% 0%, rgba(6,182,212,0.05) 0%, transparent 55%);
       color: var(--text);
       font-family: var(--font);
       min-height: 100vh;
-      padding: 24px 28px 40px;
+      padding: 32px 36px 56px;
+      max-width: 1400px;
+      margin: 0 auto;
     }
 
     /* ── Header ── */
@@ -41,395 +40,354 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 28px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border);
+      margin-bottom: 36px;
     }
 
-    .header-left h1 {
-      font-size: 1.35rem;
+    .title {
+      font-size: 1.5rem;
       font-weight: 700;
       letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      color: var(--text);
     }
 
-    .header-left h1 span {
-      background: linear-gradient(135deg, #818cf8, #38bdf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .title span {
+      color: var(--blue);
     }
 
-    .header-left p {
-      font-size: 0.76rem;
+    .subtitle {
+      margin-top: 6px;
+      font-size: 0.82rem;
       color: var(--muted);
-      margin-top: 5px;
-      letter-spacing: 0.2px;
     }
 
     .header-right {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 20px;
     }
 
-    .status-pill {
+    .live-pill {
       display: flex;
       align-items: center;
-      gap: 7px;
-      background: rgba(16,185,129,0.08);
-      border: 1px solid rgba(16,185,129,0.22);
-      color: #34d399;
-      font-size: 0.73rem;
+      gap: 8px;
+      background: rgba(52, 211, 153, 0.08);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      color: var(--green);
+      font-size: 0.78rem;
       font-weight: 600;
-      padding: 5px 13px;
+      padding: 6px 14px;
       border-radius: 99px;
-      letter-spacing: 0.3px;
     }
 
-    .status-dot {
-      width: 6px; height: 6px;
+    .live-dot {
+      width: 7px; height: 7px;
       border-radius: 50%;
-      background: #34d399;
-      animation: blink 2s infinite;
+      background: var(--green);
+      animation: pulse 2s infinite;
     }
 
-    @keyframes blink {
+    @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.35; }
+      50%       { opacity: 0.3; }
+    }
+
+    .clock-block {
+      text-align: right;
     }
 
     #clock {
-      font-size: 0.82rem;
+      font-size: 0.9rem;
+      font-weight: 500;
       color: var(--muted2);
       font-variant-numeric: tabular-nums;
-      text-align: right;
     }
 
     #last-update {
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       color: var(--muted);
-      text-align: right;
-      margin-top: 3px;
+      margin-top: 2px;
     }
 
-    /* ── Summary stats ── */
-    .stats-row {
+    /* ── Summary row ── */
+    .summary {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 22px;
+      gap: 16px;
+      margin-bottom: 28px;
     }
 
-    .stat-card {
-      background: var(--surface);
+    .summary-card {
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 13px;
-      padding: 16px 18px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      animation: fadeUp .35s ease both;
+      border-radius: 16px;
+      padding: 22px 24px;
     }
 
-    .stat-icon {
-      width: 42px; height: 42px;
-      border-radius: 11px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.15rem;
-      flex-shrink: 0;
-    }
-
-    .stat-icon.hot   { background: rgba(239,68,68,0.1); }
-    .stat-icon.humid { background: rgba(6,182,212,0.1); }
-    .stat-icon.wind  { background: rgba(245,158,11,0.1); }
-    .stat-icon.alert { background: rgba(99,102,241,0.1); }
-
-    .stat-label {
-      font-size: 0.7rem;
+    .summary-label {
+      font-size: 0.75rem;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 0.9px;
       font-weight: 600;
-    }
-
-    .stat-value {
-      font-size: 1.15rem;
-      font-weight: 700;
-      margin-top: 3px;
-      line-height: 1;
-    }
-
-    .stat-sub {
-      font-size: 0.7rem;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    /* ── City cards ── */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 14px;
-      margin-bottom: 22px;
-    }
-
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      cursor: pointer;
-      transition: border-color .2s, transform .18s, box-shadow .2s;
-      position: relative;
-      overflow: hidden;
-      animation: fadeUp .35s ease both;
-    }
-
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2.5px;
-      background: var(--cc, var(--accent));
-      transform: scaleX(0);
-      transition: transform .2s;
-      transform-origin: left;
-    }
-
-    .card:hover::after, .card.active::after { transform: scaleX(1); }
-
-    .card:hover {
-      border-color: #253352;
-      transform: translateY(-3px);
-      box-shadow: 0 10px 28px rgba(0,0,0,0.35);
-    }
-
-    .card.active {
-      border-color: var(--cc, var(--accent));
-      box-shadow: 0 0 0 1px var(--cc, var(--accent))44, 0 10px 28px rgba(0,0,0,0.35);
-    }
-
-    .card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
       margin-bottom: 10px;
     }
 
-    .city-name {
-      font-size: 0.68rem;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1.1px;
-      font-weight: 600;
-    }
-
-    .weather-icon { font-size: 1.35rem; line-height: 1; }
-
-    .card .temp {
-      font-size: 2.1rem;
+    .summary-value {
+      font-size: 1.55rem;
       font-weight: 700;
       line-height: 1;
-      letter-spacing: -1.5px;
+      color: var(--text);
     }
 
-    .card .meta {
-      margin-top: 13px;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      border-top: 1px solid var(--border);
-      padding-top: 11px;
+    .summary-sub {
+      font-size: 0.8rem;
+      color: var(--muted2);
+      margin-top: 6px;
     }
 
-    .meta-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .meta-label { font-size: 0.68rem; color: var(--muted); }
-    .meta-value { font-size: 0.73rem; color: var(--muted2); font-weight: 500; }
-
-    /* ── Charts ── */
-    .charts-2col {
+    /* ── City cards ── */
+    .cities {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
     }
 
-    .charts-3col {
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 16px;
-      margin-bottom: 22px;
-    }
-
-    .chart-box {
-      background: var(--surface);
+    .city-card {
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      animation: fadeUp .35s ease both;
+      border-radius: 16px;
+      padding: 20px;
+      cursor: pointer;
+      transition: border-color .18s, box-shadow .18s, transform .18s;
     }
 
-    .chart-box-header {
+    .city-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      border-color: #303a55;
+    }
+
+    .city-card.active {
+      border-color: var(--city-color, var(--blue));
+      box-shadow: 0 0 0 1px var(--city-color, var(--blue))33;
+    }
+
+    .city-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 14px;
     }
 
-    .chart-box-header h2 {
-      font-size: 0.78rem;
+    .city-name {
+      font-size: 0.72rem;
       font-weight: 600;
-      color: var(--muted2);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .tag {
-      font-size: 0.67rem;
       color: var(--muted);
-      background: rgba(255,255,255,0.04);
-      padding: 3px 9px;
-      border-radius: 99px;
-      border: 1px solid var(--border);
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
     }
 
-    /* ── Anomaly log ── */
-    .anomaly-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      animation: fadeUp .35s ease both;
+    .city-emoji {
+      font-size: 1.3rem;
     }
 
-    .section-header {
+    .city-temp {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1;
+      color: var(--city-color, var(--blue));
+    }
+
+    .city-stats {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .city-stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .city-stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .city-stat-value {
+      font-size: 0.78rem;
+      color: var(--muted2);
+      font-weight: 500;
+    }
+
+    /* ── Charts ── */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .charts-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .chart-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 22px 16px;
+    }
+
+    .chart-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 16px;
     }
 
-    .section-header h2 {
-      font-size: 0.78rem;
+    .chart-title {
+      font-size: 0.82rem;
       font-weight: 600;
       color: var(--muted2);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
 
-    #anomaly-count {
-      background: var(--danger);
-      color: #fff;
-      font-size: 0.67rem;
-      font-weight: 700;
-      padding: 2px 7px;
+    .chart-tag {
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      padding: 3px 10px;
       border-radius: 99px;
     }
 
-    .table-wrap { overflow-x: auto; }
+    /* ── Anomaly table ── */
+    .anomaly-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 24px;
+    }
+
+    .anomaly-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .anomaly-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .count-badge {
+      background: var(--red);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+
+    .table-scroll { overflow-x: auto; }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.79rem;
+      font-size: 0.82rem;
     }
 
     th {
       text-align: left;
+      padding: 8px 14px;
+      font-size: 0.72rem;
+      font-weight: 600;
       color: var(--muted);
-      padding: 7px 12px;
-      font-weight: 500;
-      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.7px;
       border-bottom: 1px solid var(--border);
-      white-space: nowrap;
     }
 
     td {
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(30,45,69,0.55);
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(37, 44, 61, 0.6);
       color: var(--muted2);
-    }
-
-    tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: rgba(255,255,255,0.02); }
-
-    .city-dot {
-      display: inline-block;
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      margin-right: 7px;
       vertical-align: middle;
     }
 
-    .badge {
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(255,255,255,0.015); }
+
+    .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .pill {
       display: inline-flex;
       align-items: center;
-      gap: 3px;
-      padding: 3px 8px;
+      padding: 3px 10px;
       border-radius: 6px;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 600;
     }
 
-    .badge-temp { background: rgba(99,102,241,0.14); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.2); }
-    .badge-hum  { background: rgba(6,182,212,0.14);  color: #67e8f9; border: 1px solid rgba(6,182,212,0.2); }
-    .badge-wind { background: rgba(245,158,11,0.14); color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
-    .badge-up   { background: rgba(239,68,68,0.14);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
-    .badge-down { background: rgba(99,179,255,0.14); color: #93c5fd; border: 1px solid rgba(99,179,255,0.2); }
+    .pill-blue   { background: rgba(108,138,255,0.12); color: #a5b4fc; border: 1px solid rgba(108,138,255,0.2); }
+    .pill-cyan   { background: rgba(34,211,238,0.12);  color: #67e8f9; border: 1px solid rgba(34,211,238,0.2); }
+    .pill-amber  { background: rgba(251,191,36,0.12);  color: #fcd34d; border: 1px solid rgba(251,191,36,0.2); }
+    .pill-red    { background: rgba(248,113,113,0.12); color: #fca5a5; border: 1px solid rgba(248,113,113,0.2); }
+    .pill-sky    { background: rgba(56,189,248,0.12);  color: #7dd3fc; border: 1px solid rgba(56,189,248,0.2); }
 
-    .no-data { color: var(--muted); font-size: 0.83rem; padding: 24px 0; text-align: center; }
+    .no-data {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 32px 0;
+    }
 
     /* ── Footer ── */
     footer {
-      margin-top: 28px;
-      padding-top: 16px;
+      margin-top: 32px;
+      padding-top: 18px;
       border-top: 1px solid var(--border);
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      font-size: 0.7rem;
+      align-items: center;
+      font-size: 0.75rem;
       color: var(--muted);
     }
 
     footer strong { color: var(--muted2); font-weight: 500; }
 
-    /* ── Animations ── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
     /* ── Responsive ── */
     @media (max-width: 1200px) {
-      .cards { grid-template-columns: repeat(3, 1fr); }
+      .cities { grid-template-columns: repeat(3, 1fr); }
     }
-    @media (max-width: 960px) {
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
-      .charts-2col, .charts-3col { grid-template-columns: 1fr; }
+    @media (max-width: 900px) {
+      .summary { grid-template-columns: repeat(2, 1fr); }
+      .charts-row, .charts-row-2 { grid-template-columns: 1fr; }
     }
-    @media (max-width: 640px) {
-      body { padding: 16px; }
-      .cards { grid-template-columns: repeat(2, 1fr); }
-      .stats-row { grid-template-columns: repeat(2, 1fr); }
-      header { flex-direction: column; align-items: flex-start; gap: 14px; }
+    @media (max-width: 600px) {
+      body { padding: 18px 16px 40px; }
+      .cities { grid-template-columns: repeat(2, 1fr); }
+      header { flex-direction: column; align-items: flex-start; gap: 16px; }
     }
   </style>
 </head>
@@ -437,101 +395,91 @@
 
 <!-- Header -->
 <header>
-  <div class="header-left">
-    <h1>🌦 Weather <span>Pipeline</span> Dashboard</h1>
-    <p>Real-time monitoring · 5 global cities · Anomaly detection · Auto-refresh every 60s</p>
+  <div>
+    <div class="title">Weather <span>Dashboard</span></div>
+    <div class="subtitle">5 cities · Auto-refresh every 60s · Z-score anomaly detection</div>
   </div>
   <div class="header-right">
-    <div class="status-pill"><div class="status-dot"></div> Live</div>
-    <div>
+    <div class="live-pill"><div class="live-dot"></div> Live</div>
+    <div class="clock-block">
       <div id="clock"></div>
       <div id="last-update">Loading…</div>
     </div>
   </div>
 </header>
 
-<!-- Summary Stats -->
-<div class="stats-row">
-  <div class="stat-card" style="animation-delay:.05s">
-    <div class="stat-icon hot">🌡️</div>
-    <div>
-      <div class="stat-label">Hottest City</div>
-      <div class="stat-value" id="stat-hottest">—</div>
-      <div class="stat-sub" id="stat-hottest-val">—</div>
-    </div>
+<!-- Summary -->
+<div class="summary">
+  <div class="summary-card">
+    <div class="summary-label">Hottest City</div>
+    <div class="summary-value" id="stat-hottest">—</div>
+    <div class="summary-sub" id="stat-hottest-val">—</div>
   </div>
-  <div class="stat-card" style="animation-delay:.1s">
-    <div class="stat-icon humid">💧</div>
-    <div>
-      <div class="stat-label">Most Humid</div>
-      <div class="stat-value" id="stat-humid">—</div>
-      <div class="stat-sub" id="stat-humid-val">—</div>
-    </div>
+  <div class="summary-card">
+    <div class="summary-label">Most Humid</div>
+    <div class="summary-value" id="stat-humid">—</div>
+    <div class="summary-sub" id="stat-humid-val">—</div>
   </div>
-  <div class="stat-card" style="animation-delay:.15s">
-    <div class="stat-icon wind">💨</div>
-    <div>
-      <div class="stat-label">Highest Wind</div>
-      <div class="stat-value" id="stat-wind">—</div>
-      <div class="stat-sub" id="stat-wind-val">—</div>
-    </div>
+  <div class="summary-card">
+    <div class="summary-label">Highest Wind</div>
+    <div class="summary-value" id="stat-wind">—</div>
+    <div class="summary-sub" id="stat-wind-val">—</div>
   </div>
-  <div class="stat-card" style="animation-delay:.2s">
-    <div class="stat-icon alert">⚠️</div>
-    <div>
-      <div class="stat-label">Anomalies (log)</div>
-      <div class="stat-value" id="stat-anomalies">—</div>
-      <div class="stat-sub">across all cities</div>
-    </div>
+  <div class="summary-card">
+    <div class="summary-label">Total Anomalies</div>
+    <div class="summary-value" id="stat-anomalies">—</div>
+    <div class="summary-sub">across all cities</div>
   </div>
 </div>
 
 <!-- City Cards -->
-<div class="cards" id="cards"></div>
+<div class="cities" id="cities"></div>
 
-<!-- Main Charts -->
-<div class="charts-2col">
-  <div class="chart-box" style="animation-delay:.08s">
-    <div class="chart-box-header">
-      <h2>🌡️ Temperature</h2>
-      <span class="tag">Last 24h · All cities</span>
+<!-- Trend Charts -->
+<div class="charts-row">
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Temperature</div>
+      <span class="chart-tag">Last 24h · All cities</span>
     </div>
-    <div id="chart-temp" style="height:240px"></div>
+    <div id="chart-temp" style="height:230px"></div>
   </div>
-  <div class="chart-box" style="animation-delay:.12s">
-    <div class="chart-box-header">
-      <h2>💧 Humidity</h2>
-      <span class="tag">Last 24h · All cities</span>
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Humidity</div>
+      <span class="chart-tag">Last 24h · All cities</span>
     </div>
-    <div id="chart-hum" style="height:240px"></div>
+    <div id="chart-hum" style="height:230px"></div>
   </div>
 </div>
 
-<!-- Secondary Charts -->
-<div class="charts-3col">
-  <div class="chart-box" style="animation-delay:.16s">
-    <div class="chart-box-header">
-      <h2>💨 Wind Speed</h2>
-      <span class="tag">24h</span>
+<div class="charts-row-2">
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">Wind Speed</div>
+      <span class="chart-tag">Last 24h</span>
     </div>
-    <div id="chart-wind" style="height:220px"></div>
+    <div id="chart-wind" style="height:210px"></div>
   </div>
-  <div class="chart-box" style="animation-delay:.2s">
-    <div class="chart-box-header">
-      <h2>📍 City Detail</h2>
-      <span class="tag" id="detail-tag">Click a city card above</span>
+  <div class="chart-card">
+    <div class="chart-header">
+      <div class="chart-title">City Detail</div>
+      <span class="chart-tag" id="detail-tag">Click a city above</span>
     </div>
-    <div id="chart-detail" style="height:220px"></div>
+    <div id="chart-detail" style="height:210px"></div>
   </div>
 </div>
 
 <!-- Anomaly Log -->
-<div class="anomaly-section" style="animation-delay:.24s">
-  <div class="section-header">
-    <h2>⚠️ Anomaly Log <span id="anomaly-count">0</span></h2>
-    <span class="tag">Last 50 detected</span>
+<div class="anomaly-card">
+  <div class="anomaly-header">
+    <div class="anomaly-title">
+      Anomaly Log
+      <span class="count-badge" id="anomaly-count">0</span>
+    </div>
+    <span class="chart-tag">Last 50 detected</span>
   </div>
-  <div class="table-wrap">
+  <div class="table-scroll">
     <table>
       <thead>
         <tr>
@@ -553,7 +501,7 @@
 
 <!-- Footer -->
 <footer>
-  <span>Weather data via <strong>Open-Meteo API</strong> · Z-score anomaly detection (threshold ±2.5σ) · Hourly pipeline</span>
+  <span>Data from <strong>Open-Meteo API</strong> · Anomaly threshold ±2.5σ · Hourly pipeline</span>
   <span><strong>PostgreSQL</strong> · <strong>Flask</strong> · <strong>Plotly</strong></span>
 </footer>
 
@@ -561,20 +509,20 @@
 const LAYOUT = {
   paper_bgcolor: 'transparent',
   plot_bgcolor:  'transparent',
-  font: { color: '#64748b', size: 11, family: 'Inter, system-ui, sans-serif' },
-  xaxis: { gridcolor: '#1e2d45', linecolor: '#1e2d45', tickfont: { size: 10 }, zeroline: false },
-  yaxis: { gridcolor: '#1e2d45', linecolor: '#1e2d45', tickfont: { size: 10 }, zeroline: false },
+  font: { color: '#5c6680', size: 11, family: 'Inter, system-ui, sans-serif' },
+  xaxis: { gridcolor: '#1e2637', linecolor: '#252c3d', tickfont: { size: 10 }, zeroline: false },
+  yaxis: { gridcolor: '#1e2637', linecolor: '#252c3d', tickfont: { size: 10 }, zeroline: false },
   legend: { bgcolor: 'transparent', font: { size: 10 }, bordercolor: 'transparent' },
-  margin: { t: 8, r: 12, b: 36, l: 46 },
+  margin: { t: 6, r: 12, b: 36, l: 46 },
   hovermode: 'x unified',
 };
 
 const COLORS = {
-  'New York City': '#818cf8',
+  'New York City': '#6c8aff',
   'Los Angeles':   '#34d399',
-  'Chicago':       '#fb923c',
+  'Chicago':       '#fbbf24',
   'London':        '#f87171',
-  'Tokyo':         '#38bdf8',
+  'Tokyo':         '#22d3ee',
 };
 
 const ICONS = {
@@ -594,7 +542,6 @@ const UNITS = {
 let selectedCity = null;
 let trendsData   = [];
 
-// Live clock
 function tick() {
   document.getElementById('clock').textContent =
     new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -602,7 +549,6 @@ function tick() {
 tick();
 setInterval(tick, 1000);
 
-// Main refresh
 async function refresh() {
   try {
     const [current, trends, anomalies] = await Promise.all([
@@ -612,17 +558,16 @@ async function refresh() {
     ]);
     trendsData = trends;
     renderStats(current, anomalies);
-    renderCards(current);
-    renderTrendCharts(trends);
+    renderCities(current);
+    renderTrendCharts();
     renderAnomalies(anomalies);
     document.getElementById('last-update').textContent =
       'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } catch (e) {
+  } catch {
     document.getElementById('last-update').textContent = 'Update failed';
   }
 }
 
-// Summary stats
 function renderStats(current, anomalies) {
   if (!current.length) return;
   const hottest = current.reduce((a, b) => b.temperature_c > a.temperature_c ? b : a);
@@ -637,47 +582,43 @@ function renderStats(current, anomalies) {
   document.getElementById('stat-anomalies').textContent   = anomalies.length;
 }
 
-// City cards
-function renderCards(current) {
-  const container = document.getElementById('cards');
+function renderCities(current) {
+  const container = document.getElementById('cities');
   container.innerHTML = '';
-  current.forEach((c, i) => {
-    const color = COLORS[c.location] || '#818cf8';
-    const div = document.createElement('div');
-    div.className = 'card' + (c.location === selectedCity ? ' active' : '');
-    div.style.cssText = `--cc:${color}; animation-delay:${i * 0.06}s`;
-    div.innerHTML = `
-      <div class="card-header">
+  current.forEach(c => {
+    const color = COLORS[c.location] || '#6c8aff';
+    const el = document.createElement('div');
+    el.className = 'city-card' + (c.location === selectedCity ? ' active' : '');
+    el.style.setProperty('--city-color', color);
+    el.innerHTML = `
+      <div class="city-top">
         <div class="city-name">${c.location}</div>
-        <div class="weather-icon">${ICONS[c.location] || '🌍'}</div>
+        <div class="city-emoji">${ICONS[c.location] || '🌍'}</div>
       </div>
-      <div class="temp" style="color:${color}">
-        ${c.temperature_c != null ? c.temperature_c.toFixed(1) + '°' : 'N/A'}
-      </div>
-      <div class="meta">
-        <div class="meta-row">
-          <span class="meta-label">Humidity</span>
-          <span class="meta-value">${c.humidity_pct != null ? c.humidity_pct.toFixed(0) + '%' : 'N/A'}</span>
+      <div class="city-temp">${c.temperature_c != null ? c.temperature_c.toFixed(1) + '°' : 'N/A'}</div>
+      <div class="city-stats">
+        <div class="city-stat-row">
+          <span class="city-stat-label">Humidity</span>
+          <span class="city-stat-value">${c.humidity_pct != null ? c.humidity_pct.toFixed(0) + '%' : 'N/A'}</span>
         </div>
-        <div class="meta-row">
-          <span class="meta-label">Wind</span>
-          <span class="meta-value">${c.wind_speed_kmh != null ? c.wind_speed_kmh.toFixed(1) + ' km/h' : 'N/A'}</span>
+        <div class="city-stat-row">
+          <span class="city-stat-label">Wind</span>
+          <span class="city-stat-value">${c.wind_speed_kmh != null ? c.wind_speed_kmh.toFixed(1) + ' km/h' : 'N/A'}</span>
         </div>
       </div>`;
-    div.addEventListener('click', () => selectCity(c.location));
-    container.appendChild(div);
+    el.addEventListener('click', () => selectCity(c.location));
+    container.appendChild(el);
   });
 }
 
 function selectCity(city) {
   selectedCity = city;
-  document.querySelectorAll('.card').forEach(el =>
+  document.querySelectorAll('.city-card').forEach(el =>
     el.classList.toggle('active', el.querySelector('.city-name').textContent === city));
   document.getElementById('detail-tag').textContent = city;
   renderDetailChart(city);
 }
 
-// Trend charts
 function buildTraces(metric) {
   const byCity = {};
   trendsData.forEach(r => {
@@ -694,16 +635,15 @@ function buildTraces(metric) {
 
 function renderTrendCharts() {
   const cfg = { responsive: true, displayModeBar: false };
-  const yAxis = (title) => ({ ...LAYOUT.yaxis, title: { text: title, font: { size: 10, color: '#64748b' } } });
+  const yAxis = t => ({ ...LAYOUT.yaxis, title: { text: t, font: { size: 10, color: '#5c6680' } } });
   Plotly.react('chart-temp',  buildTraces('temperature_c'),  { ...LAYOUT, yaxis: yAxis('°C') },   cfg);
   Plotly.react('chart-hum',   buildTraces('humidity_pct'),   { ...LAYOUT, yaxis: yAxis('%') },    cfg);
   Plotly.react('chart-wind',  buildTraces('wind_speed_kmh'), { ...LAYOUT, yaxis: yAxis('km/h') }, cfg);
 }
 
-// Detail chart
 function renderDetailChart(city) {
   const rows  = trendsData.filter(r => r.location === city);
-  const color = COLORS[city] || '#818cf8';
+  const color = COLORS[city] || '#6c8aff';
   const traces = [
     {
       type: 'scatter', mode: 'lines', name: 'Temp (°C)',
@@ -717,21 +657,19 @@ function renderDetailChart(city) {
       line: { color: '#34d399', width: 2, dash: 'dot', shape: 'spline' }, yaxis: 'y2',
     },
   ];
-  const layout = {
+  Plotly.react('chart-detail', traces, {
     ...LAYOUT,
-    yaxis:  { ...LAYOUT.yaxis, title: { text: '°C', font: { size: 10, color: '#64748b' } } },
-    yaxis2: { ...LAYOUT.yaxis, title: { text: '%', font: { size: 10, color: '#64748b' } }, overlaying: 'y', side: 'right' },
+    yaxis:  { ...LAYOUT.yaxis, title: { text: '°C', font: { size: 10, color: '#5c6680' } } },
+    yaxis2: { ...LAYOUT.yaxis, title: { text: '%', font: { size: 10, color: '#5c6680' } }, overlaying: 'y', side: 'right' },
     margin: { ...LAYOUT.margin, r: 52 },
-    legend: { ...LAYOUT.legend, orientation: 'h', y: -0.18 },
-  };
-  Plotly.react('chart-detail', traces, layout, { responsive: true, displayModeBar: false });
+    legend: { ...LAYOUT.legend, orientation: 'h', y: -0.2 },
+  }, { responsive: true, displayModeBar: false });
 }
 
-// Anomaly table
 const METRIC_BADGE = {
-  temperature_c:  ['🌡 Temp',  'badge-temp'],
-  humidity_pct:   ['💧 Humid', 'badge-hum'],
-  wind_speed_kmh: ['💨 Wind',  'badge-wind'],
+  temperature_c:  ['Temp',     'pill-blue'],
+  humidity_pct:   ['Humidity', 'pill-cyan'],
+  wind_speed_kmh: ['Wind',     'pill-amber'],
 };
 
 function renderAnomalies(anomalies) {
@@ -744,16 +682,16 @@ function renderAnomalies(anomalies) {
   const fmt = d => new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   tbody.innerHTML = anomalies.map(a => {
     const [label, cls] = METRIC_BADGE[a.metric] || [a.metric, ''];
-    const dirCls = a.z_score > 0 ? 'badge-up' : 'badge-down';
+    const dirCls = a.z_score > 0 ? 'pill-red' : 'pill-sky';
     const dir    = a.z_score > 0 ? '▲ Spike' : '▼ Drop';
     const unit   = UNITS[a.metric] || '';
     const dot    = COLORS[a.city] || '#aaa';
     return `<tr>
-      <td><span class="city-dot" style="background:${dot}"></span>${a.city}</td>
-      <td><span class="badge ${cls}">${label}</span></td>
+      <td><span class="dot" style="background:${dot}"></span>${a.city}</td>
+      <td><span class="pill ${cls}">${label}</span></td>
       <td style="color:var(--text);font-weight:500">${a.value.toFixed(1)}${unit}</td>
       <td style="font-variant-numeric:tabular-nums">${Math.abs(a.z_score).toFixed(2)}σ</td>
-      <td><span class="badge ${dirCls}">${dir}</span></td>
+      <td><span class="pill ${dirCls}">${dir}</span></td>
       <td>${fmt(a.reading_time)}</td>
       <td>${fmt(a.detected_at)}</td>
     </tr>`;
