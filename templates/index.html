@@ -5,23 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:      #0f1117;
-      --card:    #181c27;
-      --border:  #252c3d;
-      --text:    #e8eaf0;
-      --muted:   #5c6680;
-      --muted2:  #8892aa;
+      --bg:      #0d0f18;
+      --card:    #131729;
+      --card2:   #161b2e;
+      --border:  #1e2440;
+      --border2: #262d4a;
+      --text:    #e6e8ff;
+      --muted:   #505878;
+      --muted2:  #8890b8;
       --blue:    #6c8aff;
+      --violet:  #a78bfa;
       --cyan:    #22d3ee;
       --green:   #34d399;
       --amber:   #fbbf24;
       --red:     #f87171;
+      --sky:     #38bdf8;
       --font:    'Inter', system-ui, sans-serif;
     }
 
@@ -30,34 +34,47 @@
       color: var(--text);
       font-family: var(--font);
       min-height: 100vh;
-      padding: 32px 36px 56px;
-      max-width: 1400px;
+      padding: 36px 40px 64px;
+      max-width: 1440px;
       margin: 0 auto;
     }
 
     /* ── Header ── */
     header {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 36px;
+      margin-bottom: 40px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* subtle glow behind title */
+    header::before {
+      content: '';
+      position: absolute;
+      top: -40px; left: -42px;
+      width: 580px; height: 280px;
+      background: radial-gradient(ellipse at 15% 0%, rgba(108,138,255,0.13) 0%, transparent 65%);
+      pointer-events: none;
     }
 
     .title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      color: var(--text);
-    }
-
-    .title span {
-      color: var(--blue);
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.9px;
+      background: linear-gradient(130deg, #e6e8ff 20%, #a5b4fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .subtitle {
       margin-top: 6px;
       font-size: 0.82rem;
       color: var(--muted);
+      line-height: 1.6;
     }
 
     .header-right {
@@ -70,13 +87,14 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: rgba(52, 211, 153, 0.08);
-      border: 1px solid rgba(52, 211, 153, 0.2);
+      background: rgba(52,211,153,0.07);
+      border: 1px solid rgba(52,211,153,0.22);
       color: var(--green);
       font-size: 0.78rem;
       font-weight: 600;
-      padding: 6px 14px;
+      padding: 8px 16px;
       border-radius: 99px;
+      letter-spacing: 0.3px;
     }
 
     .live-dot {
@@ -87,126 +105,199 @@
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.3; }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.35; transform: scale(0.8); }
     }
 
-    .clock-block {
-      text-align: right;
-    }
+    .clock-block { text-align: right; }
 
     #clock {
-      font-size: 0.9rem;
-      font-weight: 500;
+      font-size: 0.92rem;
+      font-weight: 600;
       color: var(--muted2);
       font-variant-numeric: tabular-nums;
+      letter-spacing: 0.3px;
     }
 
     #last-update {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--muted);
-      margin-top: 2px;
+      margin-top: 3px;
+    }
+
+    /* ── Section headings ── */
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.1px;
+    }
+
+    .section-heading::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
 
     /* ── Summary row ── */
     .summary {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 28px;
+      gap: 14px;
+      margin-bottom: 36px;
     }
 
     .summary-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 22px 24px;
+      border-radius: 20px;
+      padding: 20px 20px 18px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
     }
 
+    .summary-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .summary-icon {
+      width: 46px; height: 46px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+    }
+
+    .summary-icon.hot   { background: rgba(251,191,36,0.09);  border: 1px solid rgba(251,191,36,0.15); }
+    .summary-icon.humid { background: rgba(34,211,238,0.09);  border: 1px solid rgba(34,211,238,0.15); }
+    .summary-icon.wind  { background: rgba(108,138,255,0.09); border: 1px solid rgba(108,138,255,0.15); }
+    .summary-icon.alert { background: rgba(248,113,113,0.09); border: 1px solid rgba(248,113,113,0.15); }
+
+    .summary-content { flex: 1; min-width: 0; }
+
     .summary-label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.9px;
       font-weight: 600;
-      margin-bottom: 10px;
+      margin-bottom: 7px;
     }
 
     .summary-value {
-      font-size: 1.55rem;
+      font-size: 1.4rem;
       font-weight: 700;
       line-height: 1;
       color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .summary-sub {
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       color: var(--muted2);
-      margin-top: 6px;
+      margin-top: 5px;
     }
 
     /* ── City cards ── */
     .cities {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 14px;
-      margin-bottom: 28px;
+      gap: 12px;
+      margin-bottom: 36px;
     }
 
     .city-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 20px;
       cursor: pointer;
-      transition: border-color .18s, box-shadow .18s, transform .18s;
+      transition: border-color .2s, box-shadow .2s, transform .2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* colored top accent bar */
+    .city-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--city-color, var(--blue));
+      opacity: 0;
+      transition: opacity .2s;
     }
 
     .city-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-      border-color: #303a55;
+      transform: translateY(-3px);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.38);
+      border-color: var(--border2);
+    }
+
+    .city-card:hover::before,
+    .city-card.active::before {
+      opacity: 1;
     }
 
     .city-card.active {
       border-color: var(--city-color, var(--blue));
-      box-shadow: 0 0 0 1px var(--city-color, var(--blue))33;
+      box-shadow: 0 0 0 1px var(--city-color, var(--blue))1a, 0 10px 28px rgba(0,0,0,0.32);
     }
 
     .city-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .city-name {
-      font-size: 0.72rem;
-      font-weight: 600;
+      font-size: 0.68rem;
+      font-weight: 700;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0.9px;
+      letter-spacing: 0.8px;
     }
 
     .city-emoji {
-      font-size: 1.3rem;
+      font-size: 1.45rem;
+      line-height: 1;
     }
 
     .city-temp {
-      font-size: 2.4rem;
-      font-weight: 700;
-      letter-spacing: -2px;
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -2.5px;
       line-height: 1;
       color: var(--city-color, var(--blue));
     }
 
+    .city-condition {
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-weight: 500;
+      margin-top: 4px;
+      margin-bottom: 14px;
+    }
+
     .city-stats {
-      margin-top: 16px;
-      padding-top: 14px;
+      padding-top: 12px;
       border-top: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 7px;
     }
 
     .city-stat-row {
@@ -216,55 +307,56 @@
     }
 
     .city-stat-label {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: var(--muted);
     }
 
     .city-stat-value {
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       color: var(--muted2);
-      font-weight: 500;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
     }
 
     /* ── Charts ── */
     .charts-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
+      gap: 14px;
+      margin-bottom: 14px;
     }
 
     .charts-row-2 {
       display: grid;
       grid-template-columns: 1fr 2fr;
-      gap: 16px;
-      margin-bottom: 28px;
+      gap: 14px;
+      margin-bottom: 36px;
     }
 
     .chart-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 22px 22px 16px;
+      border-radius: 20px;
+      padding: 22px 20px 14px;
     }
 
     .chart-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .chart-title {
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 0.85rem;
+      font-weight: 700;
       color: var(--muted2);
     }
 
     .chart-tag {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: var(--muted);
-      background: rgba(255,255,255,0.03);
+      background: rgba(255,255,255,0.025);
       border: 1px solid var(--border);
       padding: 3px 10px;
       border-radius: 99px;
@@ -274,8 +366,8 @@
     .anomaly-card {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 22px 24px;
+      border-radius: 20px;
+      padding: 24px 24px 20px;
     }
 
     .anomaly-header {
@@ -286,8 +378,8 @@
     }
 
     .anomaly-title {
-      font-size: 0.82rem;
-      font-weight: 600;
+      font-size: 0.85rem;
+      font-weight: 700;
       color: var(--muted2);
       display: flex;
       align-items: center;
@@ -295,11 +387,12 @@
     }
 
     .count-badge {
-      background: var(--red);
-      color: #fff;
+      background: rgba(248,113,113,0.1);
+      color: var(--red);
+      border: 1px solid rgba(248,113,113,0.22);
       font-size: 0.7rem;
       font-weight: 700;
-      padding: 2px 8px;
+      padding: 2px 9px;
       border-radius: 99px;
     }
 
@@ -314,8 +407,8 @@
     th {
       text-align: left;
       padding: 8px 14px;
-      font-size: 0.72rem;
-      font-weight: 600;
+      font-size: 0.68rem;
+      font-weight: 700;
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.7px;
@@ -323,14 +416,14 @@
     }
 
     td {
-      padding: 12px 14px;
-      border-bottom: 1px solid rgba(37, 44, 61, 0.6);
+      padding: 13px 14px;
+      border-bottom: 1px solid rgba(30, 36, 64, 0.9);
       color: var(--muted2);
       vertical-align: middle;
     }
 
     tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: rgba(255,255,255,0.015); }
+    tbody tr:hover td { background: rgba(255,255,255,0.016); }
 
     .dot {
       display: inline-block;
@@ -345,32 +438,32 @@
       align-items: center;
       padding: 3px 10px;
       border-radius: 6px;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 600;
     }
 
-    .pill-blue   { background: rgba(108,138,255,0.12); color: #a5b4fc; border: 1px solid rgba(108,138,255,0.2); }
-    .pill-cyan   { background: rgba(34,211,238,0.12);  color: #67e8f9; border: 1px solid rgba(34,211,238,0.2); }
-    .pill-amber  { background: rgba(251,191,36,0.12);  color: #fcd34d; border: 1px solid rgba(251,191,36,0.2); }
-    .pill-red    { background: rgba(248,113,113,0.12); color: #fca5a5; border: 1px solid rgba(248,113,113,0.2); }
-    .pill-sky    { background: rgba(56,189,248,0.12);  color: #7dd3fc; border: 1px solid rgba(56,189,248,0.2); }
+    .pill-blue   { background: rgba(108,138,255,0.1); color: #a5b4fc; border: 1px solid rgba(108,138,255,0.18); }
+    .pill-cyan   { background: rgba(34,211,238,0.1);  color: #67e8f9; border: 1px solid rgba(34,211,238,0.18); }
+    .pill-amber  { background: rgba(251,191,36,0.1);  color: #fcd34d; border: 1px solid rgba(251,191,36,0.18); }
+    .pill-red    { background: rgba(248,113,113,0.1); color: #fca5a5; border: 1px solid rgba(248,113,113,0.18); }
+    .pill-sky    { background: rgba(56,189,248,0.1);  color: #7dd3fc; border: 1px solid rgba(56,189,248,0.18); }
 
     .no-data {
       text-align: center;
       color: var(--muted);
       font-size: 0.85rem;
-      padding: 32px 0;
+      padding: 40px 0;
     }
 
     /* ── Footer ── */
     footer {
-      margin-top: 32px;
-      padding-top: 18px;
+      margin-top: 40px;
+      padding-top: 20px;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--muted);
     }
 
@@ -378,16 +471,17 @@
 
     /* ── Responsive ── */
     @media (max-width: 1200px) {
-      .cities { grid-template-columns: repeat(3, 1fr); }
+      .cities  { grid-template-columns: repeat(3, 1fr); }
+      .summary { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 900px) {
-      .summary { grid-template-columns: repeat(2, 1fr); }
       .charts-row, .charts-row-2 { grid-template-columns: 1fr; }
     }
     @media (max-width: 600px) {
-      body { padding: 18px 16px 40px; }
+      body    { padding: 18px 16px 40px; }
       .cities { grid-template-columns: repeat(2, 1fr); }
-      header { flex-direction: column; align-items: flex-start; gap: 16px; }
+      header  { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .summary { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -396,58 +490,73 @@
 <!-- Header -->
 <header>
   <div>
-    <div class="title">Weather <span>Dashboard</span></div>
-    <div class="subtitle">5 cities · Auto-refresh every 60s · Z-score anomaly detection</div>
+    <div class="title">Weather Dashboard</div>
+    <div class="subtitle">Tracking 5 cities worldwide &middot; Auto-refreshes every 60s &middot; Z-score anomaly detection</div>
   </div>
   <div class="header-right">
     <div class="live-pill"><div class="live-dot"></div> Live</div>
     <div class="clock-block">
       <div id="clock"></div>
-      <div id="last-update">Loading…</div>
+      <div id="last-update">Loading&hellip;</div>
     </div>
   </div>
 </header>
 
 <!-- Summary -->
+<div class="section-heading">At a glance</div>
 <div class="summary">
   <div class="summary-card">
-    <div class="summary-label">Hottest City</div>
-    <div class="summary-value" id="stat-hottest">—</div>
-    <div class="summary-sub" id="stat-hottest-val">—</div>
+    <div class="summary-icon hot">🔥</div>
+    <div class="summary-content">
+      <div class="summary-label">Hottest City</div>
+      <div class="summary-value" id="stat-hottest">—</div>
+      <div class="summary-sub" id="stat-hottest-val">—</div>
+    </div>
   </div>
   <div class="summary-card">
-    <div class="summary-label">Most Humid</div>
-    <div class="summary-value" id="stat-humid">—</div>
-    <div class="summary-sub" id="stat-humid-val">—</div>
+    <div class="summary-icon humid">💧</div>
+    <div class="summary-content">
+      <div class="summary-label">Most Humid</div>
+      <div class="summary-value" id="stat-humid">—</div>
+      <div class="summary-sub" id="stat-humid-val">—</div>
+    </div>
   </div>
   <div class="summary-card">
-    <div class="summary-label">Highest Wind</div>
-    <div class="summary-value" id="stat-wind">—</div>
-    <div class="summary-sub" id="stat-wind-val">—</div>
+    <div class="summary-icon wind">💨</div>
+    <div class="summary-content">
+      <div class="summary-label">Highest Wind</div>
+      <div class="summary-value" id="stat-wind">—</div>
+      <div class="summary-sub" id="stat-wind-val">—</div>
+    </div>
   </div>
   <div class="summary-card">
-    <div class="summary-label">Total Anomalies</div>
-    <div class="summary-value" id="stat-anomalies">—</div>
-    <div class="summary-sub">across all cities</div>
+    <div class="summary-icon alert">⚠️</div>
+    <div class="summary-content">
+      <div class="summary-label">Anomalies Found</div>
+      <div class="summary-value" id="stat-anomalies">—</div>
+      <div class="summary-sub">across all cities</div>
+    </div>
   </div>
 </div>
 
 <!-- City Cards -->
+<div class="section-heading">Current Conditions</div>
 <div class="cities" id="cities"></div>
 
 <!-- Trend Charts -->
+<div class="section-heading">24-Hour Trends</div>
 <div class="charts-row">
   <div class="chart-card">
     <div class="chart-header">
-      <div class="chart-title">Temperature</div>
-      <span class="chart-tag">Last 24h · All cities</span>
+      <div class="chart-title">🌡️ Temperature</div>
+      <span class="chart-tag">All cities</span>
     </div>
     <div id="chart-temp" style="height:230px"></div>
   </div>
   <div class="chart-card">
     <div class="chart-header">
-      <div class="chart-title">Humidity</div>
-      <span class="chart-tag">Last 24h · All cities</span>
+      <div class="chart-title">💧 Humidity</div>
+      <span class="chart-tag">All cities</span>
     </div>
     <div id="chart-hum" style="height:230px"></div>
   </div>
@@ -456,8 +565,8 @@
 <div class="charts-row-2">
   <div class="chart-card">
     <div class="chart-header">
-      <div class="chart-title">Wind Speed</div>
-      <span class="chart-tag">Last 24h</span>
+      <div class="chart-title">💨 Wind Speed</div>
+      <span class="chart-tag">All cities</span>
     </div>
     <div id="chart-wind" style="height:210px"></div>
   </div>
@@ -471,13 +580,14 @@
 </div>
 
 <!-- Anomaly Log -->
+<div class="section-heading">Anomaly Log</div>
 <div class="anomaly-card">
   <div class="anomaly-header">
     <div class="anomaly-title">
-      Anomaly Log
+      Statistical anomalies detected
       <span class="count-badge" id="anomaly-count">0</span>
     </div>
-    <span class="chart-tag">Last 50 detected</span>
+    <span class="chart-tag">Last 50 &middot; |z| &ge; 2.5&sigma;</span>
   </div>
   <div class="table-scroll">
     <table>
@@ -501,17 +611,17 @@
 
 <!-- Footer -->
 <footer>
-  <span>Data from <strong>Open-Meteo API</strong> · Anomaly threshold ±2.5σ · Hourly pipeline</span>
-  <span><strong>PostgreSQL</strong> · <strong>Flask</strong> · <strong>Plotly</strong></span>
+  <span>Data from <strong>Open-Meteo API</strong> &middot; Anomaly threshold &plusmn;2.5&sigma; &middot; Hourly pipeline</span>
+  <span>Powered by <strong>PostgreSQL</strong> &middot; <strong>Flask</strong> &middot; <strong>Plotly</strong></span>
 </footer>
 
 <script>
 const LAYOUT = {
   paper_bgcolor: 'transparent',
   plot_bgcolor:  'transparent',
-  font: { color: '#5c6680', size: 11, family: 'Inter, system-ui, sans-serif' },
-  xaxis: { gridcolor: '#1e2637', linecolor: '#252c3d', tickfont: { size: 10 }, zeroline: false },
-  yaxis: { gridcolor: '#1e2637', linecolor: '#252c3d', tickfont: { size: 10 }, zeroline: false },
+  font: { color: '#505878', size: 11, family: 'Inter, system-ui, sans-serif' },
+  xaxis: { gridcolor: '#181f38', linecolor: '#1e2440', tickfont: { size: 10 }, zeroline: false },
+  yaxis: { gridcolor: '#181f38', linecolor: '#1e2440', tickfont: { size: 10 }, zeroline: false },
   legend: { bgcolor: 'transparent', font: { size: 10 }, bordercolor: 'transparent' },
   margin: { t: 6, r: 12, b: 36, l: 46 },
   hovermode: 'x unified',
@@ -538,6 +648,18 @@ const UNITS = {
   humidity_pct:   '%',
   wind_speed_kmh: ' km/h',
 };
+
+function tempCondition(c) {
+  if (c == null) return '';
+  if (c <= 0)  return 'Freezing';
+  if (c <= 8)  return 'Very Cold';
+  if (c <= 14) return 'Cold';
+  if (c <= 19) return 'Cool';
+  if (c <= 24) return 'Comfortable';
+  if (c <= 29) return 'Warm';
+  if (c <= 35) return 'Hot';
+  return 'Very Hot';
+}
 
 let selectedCity = null;
 let trendsData   = [];
@@ -596,6 +718,7 @@ function renderCities(current) {
         <div class="city-emoji">${ICONS[c.location] || '🌍'}</div>
       </div>
       <div class="city-temp">${c.temperature_c != null ? c.temperature_c.toFixed(1) + '°' : 'N/A'}</div>
+      <div class="city-condition">${tempCondition(c.temperature_c)}</div>
       <div class="city-stats">
         <div class="city-stat-row">
           <span class="city-stat-label">Humidity</span>
@@ -635,7 +758,7 @@ function buildTraces(metric) {
 
 function renderTrendCharts() {
   const cfg = { responsive: true, displayModeBar: false };
-  const yAxis = t => ({ ...LAYOUT.yaxis, title: { text: t, font: { size: 10, color: '#5c6680' } } });
+  const yAxis = t => ({ ...LAYOUT.yaxis, title: { text: t, font: { size: 10, color: '#505878' } } });
   Plotly.react('chart-temp',  buildTraces('temperature_c'),  { ...LAYOUT, yaxis: yAxis('°C') },   cfg);
   Plotly.react('chart-hum',   buildTraces('humidity_pct'),   { ...LAYOUT, yaxis: yAxis('%') },    cfg);
   Plotly.react('chart-wind',  buildTraces('wind_speed_kmh'), { ...LAYOUT, yaxis: yAxis('km/h') }, cfg);
@@ -649,7 +772,7 @@ function renderDetailChart(city) {
       type: 'scatter', mode: 'lines', name: 'Temp (°C)',
       x: rows.map(r => r.reading_time), y: rows.map(r => r.temperature_c),
       line: { color, width: 2.5, shape: 'spline', smoothing: 0.6 },
-      fill: 'tozeroy', fillcolor: color + '18', yaxis: 'y',
+      fill: 'tozeroy', fillcolor: color + '15', yaxis: 'y',
     },
     {
       type: 'scatter', mode: 'lines', name: 'Humidity (%)',
@@ -659,8 +782,8 @@ function renderDetailChart(city) {
   ];
   Plotly.react('chart-detail', traces, {
     ...LAYOUT,
-    yaxis:  { ...LAYOUT.yaxis, title: { text: '°C', font: { size: 10, color: '#5c6680' } } },
-    yaxis2: { ...LAYOUT.yaxis, title: { text: '%', font: { size: 10, color: '#5c6680' } }, overlaying: 'y', side: 'right' },
+    yaxis:  { ...LAYOUT.yaxis, title: { text: '°C', font: { size: 10, color: '#505878' } } },
+    yaxis2: { ...LAYOUT.yaxis, title: { text: '%', font: { size: 10, color: '#505878' } }, overlaying: 'y', side: 'right' },
     margin: { ...LAYOUT.margin, r: 52 },
     legend: { ...LAYOUT.legend, orientation: 'h', y: -0.2 },
   }, { responsive: true, displayModeBar: false });
@@ -676,7 +799,7 @@ function renderAnomalies(anomalies) {
   document.getElementById('anomaly-count').textContent = anomalies.length;
   const tbody = document.getElementById('anomaly-body');
   if (!anomalies.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="no-data">No anomalies detected yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="no-data">All clear — no anomalies detected yet.</td></tr>';
     return;
   }
   const fmt = d => new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -689,8 +812,8 @@ function renderAnomalies(anomalies) {
     return `<tr>
       <td><span class="dot" style="background:${dot}"></span>${a.city}</td>
       <td><span class="pill ${cls}">${label}</span></td>
-      <td style="color:var(--text);font-weight:500">${a.value.toFixed(1)}${unit}</td>
-      <td style="font-variant-numeric:tabular-nums">${Math.abs(a.z_score).toFixed(2)}σ</td>
+      <td style="color:var(--text);font-weight:600">${a.value.toFixed(1)}${unit}</td>
+      <td style="font-variant-numeric:tabular-nums">${Math.abs(a.z_score).toFixed(2)}&sigma;</td>
       <td><span class="pill ${dirCls}">${dir}</span></td>
       <td>${fmt(a.reading_time)}</td>
       <td>${fmt(a.detected_at)}</td>
