@@ -44,17 +44,17 @@ psql -U postgres -d pipeline_db -f schema.sql
 
 ### 3. Configure database credentials
 
-Edit `config.py` to match your PostgreSQL setup:
+Set environment variables for your PostgreSQL setup:
 
-```python
-DB = {
-    "host": "localhost",
-    "port": 5432,
-    "dbname": "pipeline_db",
-    "user": "postgres",
-    "password": "your_password_here",
-}
+```bash
+export DB_HOST="localhost"
+export DB_PORT="5432"
+export DB_NAME="pipeline_db"
+export DB_USER="postgres"
+export DB_PASSWORD="your_password_here"
 ```
+
+`config.py` now reads these values from the environment so secrets do not need to be committed to the repo.
 
 ### 4. Install dependencies
 
