@@ -2,6 +2,7 @@ import requests
 import psycopg2
 from psycopg2.extras import execute_values
 from datetime import datetime, timezone
+from time import perf_counter
 
 import config
 from anomaly import detect_and_store_anomalies
@@ -97,7 +98,12 @@ def load(records: list[dict], conn) -> list[dict]:
 # --- PIPELINE ---
 
 def run():
-    print(f"\n[pipeline] Starting run at {datetime.now(timezone.utc).isoformat()}")
+    started_at = datetime.now(timezone.utc)
+    timer = perf_counter()
+    successes = 0
+    failures = 0
+
+    print(f"\n[pipeline] Starting run at {started_at.isoformat()} for {len(CITIES)} cities.")
     conn = psycopg2.connect(**config.DB)
     try:
         for city, coords in CITIES.items():
@@ -106,11 +112,15 @@ def run():
                 records = transform(raw)
                 load(records, conn)
                 detect_and_store_anomalies(city, records, conn)
+                successes += 1
             except Exception as e:
+                failures += 1
                 print(f"[pipeline] ERROR for {city}: {e}")
     finally:
         conn.close()
-    print("[pipeline] Done.\n")
+
+    duration = perf_counter() - timer
+    print(f"[pipeline] Done in {duration:.2f}s. Successes: {successes}, failures: {failures}.\n")
 
 
 if __name__ == "__main__":
