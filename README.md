@@ -9,6 +9,7 @@ A real-time weather data pipeline I built with anomaly detection and a live web 
 - **Detects anomalies** using a rolling z-score (|z| >= 2.5 over a 48-hour window) and logs them to the database
 - **Sends Slack alerts** (optional) whenever an anomaly is detected
 - **Serves** a dark-themed Flask dashboard with Plotly charts that auto-refreshes every 60 seconds
+- **Exposes** a lightweight `GET /health` endpoint for quick app/database checks
 
 **Cities tracked:** New York City, Los Angeles, Chicago, London, Tokyo
 
@@ -56,6 +57,15 @@ export DB_PASSWORD="your_password_here"
 
 `config.py` now reads these values from the environment so secrets do not need to be committed to the repo.
 
+Optional runtime settings:
+
+```bash
+export APP_HOST="0.0.0.0"
+export APP_PORT="5050"
+export DASHBOARD_REFRESH_SECONDS="60"
+export PIPELINE_INTERVAL_HOURS="1"
+```
+
 ### 4. Install dependencies
 
 ```bash
@@ -84,6 +94,8 @@ This does two things at once:
 
 Open `http://localhost:5050` in your browser to see the dashboard. Press `Ctrl+C` to stop.
 
+The health check is available at `http://localhost:5050/health`.
+
 ## Running the Pipeline Manually (without the server)
 
 ```bash
@@ -109,6 +121,7 @@ The dashboard auto-refreshes every 60 seconds.
 | `GET /api/history/<city>` | Last 24h of hourly readings for one city |
 | `GET /api/trends` | Last 24h data for all cities (used by the multi-line chart) |
 | `GET /api/anomalies` | 50 most recent anomalies |
+| `GET /health` | App and database health status |
 
 ## Database Schema
 
