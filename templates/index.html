@@ -1007,7 +1007,7 @@
         </p>
         <div class="masthead-tags">
           <div class="masthead-tag">5 monitored cities</div>
-          <div class="masthead-tag">Auto-refresh every 60 seconds</div>
+          <div class="masthead-tag">Auto-refresh every {{ refresh_seconds }} seconds</div>
           <div class="masthead-tag">Hourly Open-Meteo pipeline</div>
           <div class="masthead-tag">Rolling z-score anomaly detection</div>
         </div>
@@ -1215,12 +1215,15 @@
 
       <div class="footer-note">
         <div>Open-Meteo feed · PostgreSQL storage · Flask + Plotly front-end</div>
-        <div>Pipeline refresh cadence: hourly · Dashboard refresh cadence: 60s</div>
+        <div>Pipeline refresh cadence: hourly · Dashboard refresh cadence: {{ refresh_seconds }}s</div>
       </div>
     </section>
   </main>
 
   <script>
+    const REFRESH_INTERVAL_SECONDS = {{ refresh_seconds | int }};
+    const REFRESH_INTERVAL_MS = REFRESH_INTERVAL_SECONDS * 1000;
+
     const CITY_META = {
       "New York City": { color: "#0f766e", code: "NYC", tag: "Atlantic rhythm" },
       "Los Angeles": { color: "#ea580c", code: "LAX", tag: "Pacific heat" },
@@ -2013,7 +2016,7 @@
     applyMetricSwitches();
     refresh();
     setInterval(renderClock, 1000);
-    setInterval(refresh, 60000);
+    setInterval(refresh, REFRESH_INTERVAL_MS);
   </script>
 </body>
 </html>
