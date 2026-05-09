@@ -3,36 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Weather Signal Deck</title>
+  <title>Atmos Weather Room</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; }
 
     :root {
-      --bg: #f4efe8;
-      --bg-2: #efe6da;
-      --panel: rgba(255, 251, 245, 0.86);
-      --panel-strong: rgba(255, 253, 249, 0.96);
-      --line: rgba(25, 33, 38, 0.08);
-      --line-strong: rgba(25, 33, 38, 0.14);
-      --text: #172026;
-      --muted: #6b757b;
-      --muted-strong: #485158;
-      --shadow: 0 28px 70px rgba(53, 43, 29, 0.10);
-      --accent: #0f766e;
-      --accent-soft: rgba(15, 118, 110, 0.12);
-      --warm: #f59e0b;
-      --warm-soft: rgba(245, 158, 11, 0.14);
-      --cool: #2563eb;
-      --cool-soft: rgba(37, 99, 235, 0.12);
+      --bg-top: #f4f6fb;
+      --bg-bottom: #e4ebf8;
+      --panel: rgba(255, 255, 255, 0.70);
+      --panel-strong: rgba(255, 255, 255, 0.82);
+      --line: rgba(18, 28, 45, 0.10);
+      --line-strong: rgba(18, 28, 45, 0.16);
+      --text: #0f172a;
+      --muted: #5c6b84;
+      --muted-strong: #334155;
+      --shadow: 0 28px 72px rgba(26, 45, 80, 0.12);
+      --accent: #2563eb;
+      --accent-soft: rgba(37, 99, 235, 0.12);
+      --accent-glow: rgba(37, 99, 235, 0.28);
+      --accent-border: rgba(37, 99, 235, 0.22);
+      --warm: #f97316;
+      --warm-soft: rgba(249, 115, 22, 0.14);
+      --teal: #0f766e;
+      --teal-soft: rgba(15, 118, 110, 0.14);
       --danger: #dc2626;
       --danger-soft: rgba(220, 38, 38, 0.12);
-      --font-body: "IBM Plex Sans", system-ui, sans-serif;
-      --font-display: "Space Grotesk", system-ui, sans-serif;
-      --radius-xl: 30px;
+      --font-body: "Sora", system-ui, sans-serif;
+      --font-display: "Instrument Serif", Georgia, serif;
+      --radius-xl: 34px;
       --radius-lg: 24px;
       --radius-md: 18px;
     }
@@ -42,80 +44,94 @@
     body {
       margin: 0;
       min-height: 100vh;
+      overflow-x: hidden;
       font-family: var(--font-body);
       color: var(--text);
       background:
-        radial-gradient(circle at top left, rgba(37, 99, 235, 0.10), transparent 30%),
-        radial-gradient(circle at 85% 0%, rgba(245, 158, 11, 0.16), transparent 24%),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
-      padding: 28px;
+        radial-gradient(circle at 15% 18%, rgba(255, 255, 255, 0.85), transparent 26%),
+        radial-gradient(circle at 86% 12%, var(--accent-soft), transparent 26%),
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+      padding: 24px;
     }
 
     body::before,
     body::after {
       content: "";
       position: fixed;
-      inset: auto;
-      pointer-events: none;
+      width: 360px;
+      height: 360px;
       border-radius: 999px;
-      filter: blur(10px);
-      opacity: 0.7;
+      filter: blur(18px);
+      opacity: 0.9;
+      pointer-events: none;
       z-index: 0;
+      animation: float-orb 18s ease-in-out infinite alternate;
     }
 
     body::before {
-      top: 8%;
-      left: -120px;
-      width: 280px;
-      height: 280px;
-      background: rgba(15, 118, 110, 0.12);
+      top: -120px;
+      right: -120px;
+      background: var(--accent-glow);
     }
 
     body::after {
-      bottom: 4%;
-      right: -100px;
-      width: 240px;
-      height: 240px;
-      background: rgba(220, 38, 38, 0.10);
+      left: -140px;
+      bottom: -160px;
+      background: rgba(244, 114, 182, 0.15);
+      animation-delay: 3s;
     }
 
-    .dashboard {
+    @keyframes float-orb {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(18px, 26px, 0) scale(1.08); }
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+      70% { box-shadow: 0 0 0 12px rgba(37, 99, 235, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+
+    .shell {
       position: relative;
       z-index: 1;
-      max-width: 1480px;
+      max-width: 1500px;
       margin: 0 auto;
+      display: grid;
+      gap: 20px;
     }
 
     .panel {
       background: var(--panel);
-      backdrop-filter: blur(18px);
-      border: 1px solid rgba(255, 255, 255, 0.64);
-      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.72);
       border-radius: var(--radius-xl);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
     }
 
-    .hero {
+    .masthead {
       display: grid;
-      grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.9fr);
       gap: 20px;
       padding: 24px;
-      margin-bottom: 20px;
-      overflow: hidden;
       position: relative;
+      overflow: hidden;
+      isolation: isolate;
     }
 
-    .hero::before {
+    .masthead::before {
       content: "";
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(circle at 12% 18%, rgba(15, 118, 110, 0.10), transparent 26%),
-        radial-gradient(circle at 82% 20%, rgba(245, 158, 11, 0.12), transparent 24%);
+        radial-gradient(circle at 10% 14%, rgba(255, 255, 255, 0.72), transparent 22%),
+        radial-gradient(circle at 80% 22%, var(--accent-soft), transparent 24%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 58%);
       pointer-events: none;
     }
 
-    .hero-copy,
-    .hero-status {
+    .masthead-copy,
+    .masthead-stage {
       position: relative;
       z-index: 1;
     }
@@ -124,252 +140,306 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 9px 14px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.78);
-      border: 1px solid rgba(23, 32, 38, 0.08);
-      color: var(--muted-strong);
-      font-size: 0.76rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .hero-title {
-      margin: 18px 0 12px;
-      max-width: 10ch;
-      font-family: var(--font-display);
-      font-size: clamp(2.8rem, 5vw, 5rem);
-      line-height: 0.95;
-      letter-spacing: -0.06em;
-    }
-
-    .hero-copy p {
-      max-width: 58ch;
-      margin: 0;
-      color: var(--muted-strong);
-      font-size: 1rem;
-      line-height: 1.7;
-    }
-
-    .hero-notes {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .note-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
       padding: 10px 14px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid rgba(23, 32, 38, 0.08);
-      color: var(--muted-strong);
-      font-size: 0.84rem;
-      font-weight: 500;
-    }
-
-    .status-card {
-      height: 100%;
-      background: linear-gradient(180deg, rgba(255, 253, 249, 0.96), rgba(255, 247, 238, 0.88));
-      border: 1px solid rgba(23, 32, 38, 0.08);
-      border-radius: 24px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-
-    .status-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .status-label {
-      font-size: 0.76rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .live-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(15, 118, 110, 0.10);
-      color: var(--accent);
-      border: 1px solid rgba(15, 118, 110, 0.14);
-      font-size: 0.76rem;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      color: var(--muted-strong);
+      font-size: 0.75rem;
       font-weight: 700;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
     }
 
-    .live-dot {
+    .eyebrow::before {
+      content: "";
       width: 9px;
       height: 9px;
       border-radius: 999px;
       background: var(--accent);
-      box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.4);
       animation: pulse 2s infinite;
     }
 
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.35); }
-      70% { box-shadow: 0 0 0 10px rgba(15, 118, 110, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(15, 118, 110, 0); }
+    .masthead-title {
+      margin: 18px 0 14px;
+      max-width: 11ch;
+      font-family: var(--font-display);
+      font-size: clamp(3.3rem, 6vw, 5.9rem);
+      line-height: 0.86;
+      letter-spacing: -0.06em;
     }
 
-    .status-grid {
+    .masthead-copy p {
+      max-width: 56ch;
+      margin: 0;
+      color: var(--muted-strong);
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+
+    .masthead-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .masthead-tag {
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      color: var(--muted-strong);
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .stage-shell {
+      min-height: 100%;
+      padding: 18px;
+      border-radius: 28px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.70), rgba(255, 255, 255, 0.44)),
+        linear-gradient(135deg, var(--accent-soft), rgba(255, 255, 255, 0.30));
+      border: 1px solid rgba(255, 255, 255, 0.76);
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stage-shell::before {
+      content: "";
+      position: absolute;
+      inset: -90px auto auto -90px;
+      width: 180px;
+      height: 180px;
+      border-radius: 999px;
+      background: var(--accent-glow);
+      filter: blur(16px);
+      opacity: 0.85;
+    }
+
+    .stage-card,
+    .stage-grid article {
+      position: relative;
+      z-index: 1;
+    }
+
+    .stage-card {
+      padding: 18px;
+      border-radius: 24px;
+      background: rgba(15, 23, 42, 0.85);
+      color: white;
+      overflow: hidden;
+    }
+
+    .stage-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -70px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 999px;
+      background: var(--accent-glow);
+      filter: blur(24px);
+      opacity: 0.8;
+    }
+
+    .stage-kicker,
+    .stage-grid span,
+    .stat-card span,
+    .focus-note span,
+    .focus-stat span,
+    .mini-head span,
+    .insight-card h3,
+    .anomaly-badge,
+    th {
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .stage-kicker {
+      position: relative;
+      color: rgba(255, 255, 255, 0.70);
+      z-index: 1;
+    }
+
+    .stage-city {
+      position: relative;
+      margin: 10px 0 8px;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 800;
+      line-height: 0.95;
+      z-index: 1;
+    }
+
+    .stage-copy,
+    .stage-foot {
+      position: relative;
+      color: rgba(255, 255, 255, 0.78);
+      line-height: 1.65;
+      z-index: 1;
+    }
+
+    .stage-foot {
+      font-size: 0.84rem;
+      margin-top: 6px;
+    }
+
+    .stage-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
     }
 
-    .status-item {
+    .stage-grid article {
       padding: 14px;
       border-radius: 18px;
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid rgba(23, 32, 38, 0.07);
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid rgba(255, 255, 255, 0.76);
     }
 
-    .status-item span {
+    .stage-grid strong {
       display: block;
-      font-size: 0.74rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }
-
-    .status-item strong {
-      display: block;
+      margin-top: 7px;
       font-size: 1rem;
-      line-height: 1.3;
-      font-family: var(--font-display);
-      font-weight: 700;
-      letter-spacing: -0.02em;
+      line-height: 1.35;
       color: var(--text);
     }
 
-    .status-foot {
-      margin-top: auto;
-      padding-top: 6px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 0.84rem;
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: var(--panel-strong);
+      border: 1px solid rgba(255, 255, 255, 0.76);
+      box-shadow: 0 18px 42px rgba(26, 45, 80, 0.10);
+    }
+
+    .stat-card strong {
+      display: block;
+      margin: 12px 0 8px;
+      font-size: clamp(1.55rem, 2.2vw, 2.15rem);
+      font-weight: 800;
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+      color: var(--text);
+    }
+
+    .stat-card p {
+      margin: 0;
+      color: var(--muted-strong);
+      font-size: 0.88rem;
       line-height: 1.6;
     }
 
-    .metrics {
+    .content-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .metric-card {
-      padding: 18px 18px 20px;
-      border-radius: var(--radius-lg);
-      background: var(--panel-strong);
-      border: 1px solid rgba(23, 32, 38, 0.08);
-      box-shadow: 0 14px 36px rgba(53, 43, 29, 0.08);
-    }
-
-    .metric-card span {
-      display: block;
-      font-size: 0.74rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-
-    .metric-card strong {
-      display: block;
-      font-family: var(--font-display);
-      font-size: clamp(1.5rem, 2.2vw, 2.1rem);
-      line-height: 1;
-      letter-spacing: -0.05em;
-      margin-bottom: 8px;
-    }
-
-    .metric-card p {
-      margin: 0;
-      font-size: 0.9rem;
-      color: var(--muted-strong);
-      line-height: 1.5;
-    }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.95fr);
+      grid-template-columns: minmax(0, 1.22fr) minmax(330px, 0.9fr);
       gap: 20px;
-      margin-bottom: 20px;
     }
 
-    .panel-block {
+    .board,
+    .focus,
+    .network-panel,
+    .anomaly-panel,
+    .insight-card {
       padding: 22px;
     }
 
     .panel-head {
       display: flex;
-      align-items: flex-start;
       justify-content: space-between;
+      align-items: flex-start;
       gap: 14px;
       margin-bottom: 18px;
     }
 
-    .panel-head h2,
-    .panel-head h3 {
+    .panel-head h2 {
       margin: 0;
-      font-family: var(--font-display);
-      font-size: 1.15rem;
-      letter-spacing: -0.03em;
+      font-size: 1.45rem;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .panel-head p,
+    .focus-story,
+    .empty-state,
+    .table-note,
+    td {
+      color: var(--muted);
+      line-height: 1.65;
     }
 
     .panel-head p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.5;
+      margin: 7px 0 0;
+      font-size: 0.92rem;
     }
 
     .subtle-badge {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.84);
-      border: 1px solid rgba(23, 32, 38, 0.08);
+      background: rgba(255, 255, 255, 0.60);
+      border: 1px solid rgba(255, 255, 255, 0.78);
       color: var(--muted-strong);
-      font-size: 0.75rem;
-      font-weight: 600;
+      font-size: 0.76rem;
+      font-weight: 700;
       white-space: nowrap;
     }
 
-    .cities {
+    .metric-switches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .metric-switch {
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      background: rgba(255, 255, 255, 0.62);
+      color: var(--muted-strong);
+      padding: 9px 13px;
+      border-radius: 999px;
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+    }
+
+    .metric-switch:hover {
+      transform: translateY(-1px);
+    }
+
+    .metric-switch.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent-border);
+      box-shadow: 0 10px 24px var(--accent-soft);
+    }
+
+    .city-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 14px;
     }
 
     .city-card {
-      border: 1px solid rgba(23, 32, 38, 0.08);
-      background: rgba(255, 255, 255, 0.82);
-      border-radius: 24px;
       padding: 18px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.70);
+      border: 1px solid rgba(255, 255, 255, 0.76);
       cursor: pointer;
       transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
       position: relative;
@@ -379,27 +449,32 @@
     .city-card::before {
       content: "";
       position: absolute;
-      inset: 0 0 auto;
-      height: 4px;
-      background: var(--city-color, var(--accent));
-      opacity: 0.75;
+      inset: 0;
+      background:
+        radial-gradient(circle at top right, var(--city-soft, rgba(37, 99, 235, 0.10)), transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent 52%);
+      pointer-events: none;
     }
 
     .city-card:hover,
     .city-card.active {
-      transform: translateY(-3px);
-      box-shadow: 0 18px 36px rgba(53, 43, 29, 0.10);
-      border-color: color-mix(in srgb, var(--city-color, var(--accent)) 30%, white);
+      transform: translateY(-4px);
+      border-color: var(--city-border, var(--accent-border));
+      box-shadow: 0 24px 44px rgba(26, 45, 80, 0.12);
     }
 
     .city-card.active {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 250, 244, 0.92));
+      background: rgba(255, 255, 255, 0.88);
     }
 
-    .city-card-top,
-    .city-card-bottom,
-    .city-meta-row,
-    .city-trend-row {
+    .city-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .city-top,
+    .city-bottom,
+    .city-bar-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -407,95 +482,99 @@
     }
 
     .city-label {
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.10em;
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 8px;
     }
 
     .city-name {
-      font-family: var(--font-display);
+      margin-top: 8px;
       font-size: 1.2rem;
-      line-height: 1.1;
-      letter-spacing: -0.04em;
-      margin-bottom: 4px;
-    }
-
-    .city-read-time {
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
-
-    .city-code {
-      min-width: 52px;
-      height: 52px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 16px;
-      background: color-mix(in srgb, var(--city-color, var(--accent)) 12%, white);
-      border: 1px solid color-mix(in srgb, var(--city-color, var(--accent)) 18%, white);
-      color: var(--city-color, var(--accent));
-      font-family: var(--font-display);
-      font-weight: 700;
-      letter-spacing: -0.04em;
-    }
-
-    .city-temp {
-      margin: 18px 0 4px;
-      font-family: var(--font-display);
-      font-size: 3rem;
-      line-height: 0.9;
-      letter-spacing: -0.08em;
-      color: var(--city-color, var(--accent));
-    }
-
-    .city-condition {
-      color: var(--muted-strong);
-      font-size: 0.92rem;
-      margin-bottom: 16px;
-    }
-
-    .city-meta-row {
-      margin-bottom: 14px;
-      padding-top: 14px;
-      border-top: 1px solid var(--line);
+      font-weight: 800;
+      line-height: 1.05;
     }
 
     .city-meta {
-      flex: 1;
-    }
-
-    .city-meta span {
-      display: block;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 5px;
-    }
-
-    .city-meta strong {
-      font-size: 0.95rem;
-      color: var(--text);
-    }
-
-    .city-trend-row {
-      margin-top: 12px;
+      margin-top: 4px;
       color: var(--muted);
       font-size: 0.8rem;
     }
 
+    .city-rank {
+      min-width: 50px;
+      height: 50px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: var(--city-soft, rgba(37, 99, 235, 0.12));
+      border: 1px solid var(--city-border, rgba(37, 99, 235, 0.18));
+      color: var(--city-color, var(--accent));
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .city-temp {
+      margin: 18px 0 4px;
+      font-size: 3rem;
+      line-height: 0.9;
+      letter-spacing: -0.08em;
+      font-weight: 800;
+      color: var(--city-color, var(--accent));
+    }
+
+    .city-copy {
+      color: var(--muted-strong);
+      font-size: 0.9rem;
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+
+    .city-bars {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar-label {
+      min-width: 70px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .meter {
+      flex: 1;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--city-color, var(--accent)), rgba(255, 255, 255, 0.92));
+    }
+
+    .bar-value {
+      min-width: 74px;
+      text-align: right;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--muted-strong);
+    }
+
     .sparkline {
-      width: 100%;
-      height: 42px;
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.22));
-      border: 1px solid rgba(23, 32, 38, 0.05);
-      padding: 4px;
+      margin-top: 16px;
+      padding: 6px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      height: 52px;
     }
 
     .sparkline svg {
@@ -504,359 +583,301 @@
       display: block;
     }
 
-    .focus-panel {
+    .city-bottom {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .city-bottom small {
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    .city-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.06);
+      color: var(--muted-strong);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .focus {
       position: relative;
       overflow: hidden;
     }
 
-    .focus-panel::before {
+    .focus::before {
       content: "";
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at top right, color-mix(in srgb, var(--focus-color, var(--accent)) 12%, transparent) 0%, transparent 28%);
+      background:
+        radial-gradient(circle at top right, var(--accent-soft), transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 48%);
       pointer-events: none;
     }
 
-    .focus-inner {
+    .focus > * {
       position: relative;
       z-index: 1;
     }
 
-    .focus-title {
+    .focus-top {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 12px;
+      align-items: flex-start;
+      gap: 14px;
       margin-bottom: 16px;
     }
 
-    .focus-title h2 {
-      margin: 0;
-      font-family: var(--font-display);
-      font-size: 1.3rem;
-      letter-spacing: -0.04em;
-    }
-
-    .focus-badge {
+    .focus-code {
       display: inline-flex;
       align-items: center;
       padding: 9px 12px;
       border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      color: var(--accent);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--focus-color, var(--accent));
-      background: color-mix(in srgb, var(--focus-color, var(--accent)) 12%, white);
-      border: 1px solid color-mix(in srgb, var(--focus-color, var(--accent)) 18%, white);
+    }
+
+    .focus h2 {
+      margin: 14px 0 8px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 0.92;
+      letter-spacing: -0.05em;
+    }
+
+    .focus-thermo {
+      min-width: 124px;
+      padding: 14px;
+      border-radius: 22px;
+      background: rgba(15, 23, 42, 0.88);
+      color: white;
+      text-align: right;
+    }
+
+    .focus-thermo span {
+      display: block;
+      color: rgba(255, 255, 255, 0.68);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      margin-bottom: 8px;
+    }
+
+    .focus-thermo strong {
+      display: block;
+      font-size: 1.7rem;
+      font-weight: 800;
+      line-height: 1;
     }
 
     .focus-empty {
-      min-height: 420px;
+      min-height: 460px;
       display: grid;
       place-items: center;
-      text-align: center;
       padding: 28px;
-      border-radius: 22px;
+      border-radius: 24px;
+      text-align: center;
       border: 1px dashed var(--line-strong);
+      background: rgba(255, 255, 255, 0.44);
       color: var(--muted);
-      line-height: 1.7;
-      background: rgba(255, 255, 255, 0.52);
+      line-height: 1.8;
     }
 
-    .focus-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
+    .focus-notes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
-      margin-bottom: 18px;
+      margin: 18px 0;
     }
 
-    .focus-city-name {
-      font-family: var(--font-display);
-      font-size: 2.3rem;
-      line-height: 0.95;
-      letter-spacing: -0.06em;
-      margin-bottom: 6px;
-    }
-
-    .focus-city-copy {
-      color: var(--muted-strong);
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    .focus-pulse {
-      padding: 12px 14px;
+    .focus-note {
+      padding: 14px;
       border-radius: 18px;
-      background: rgba(255, 255, 255, 0.82);
-      border: 1px solid rgba(23, 32, 38, 0.08);
-      text-align: right;
-      min-width: 118px;
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(255, 255, 255, 0.76);
     }
 
-    .focus-pulse span {
+    .focus-note strong {
       display: block;
-      color: var(--muted);
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-
-    .focus-pulse strong {
-      font-family: var(--font-display);
-      font-size: 1.5rem;
-      letter-spacing: -0.05em;
-      color: var(--focus-color, var(--accent));
+      margin-top: 8px;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      color: var(--muted-strong);
     }
 
     .focus-stats {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .focus-stat {
       padding: 14px;
       border-radius: 18px;
-      background: rgba(255, 255, 255, 0.78);
-      border: 1px solid rgba(23, 32, 38, 0.07);
-    }
-
-    .focus-stat span {
-      display: block;
-      color: var(--muted);
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid rgba(255, 255, 255, 0.76);
     }
 
     .focus-stat strong {
       display: block;
-      color: var(--text);
+      margin-top: 8px;
       font-size: 1rem;
       line-height: 1.35;
+      color: var(--text);
     }
 
-    .mini-charts {
+    .mini-grid {
       display: grid;
-      grid-template-columns: 1fr;
       gap: 12px;
     }
 
-    .mini-chart-card {
+    .mini-card {
       padding: 14px 14px 8px;
       border-radius: 18px;
-      background: rgba(255, 255, 255, 0.82);
-      border: 1px solid rgba(23, 32, 38, 0.07);
+      background: rgba(255, 255, 255, 0.66);
+      border: 1px solid rgba(255, 255, 255, 0.78);
     }
 
-    .mini-chart-head {
+    .mini-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
-    .mini-chart-head strong {
-      font-size: 0.92rem;
-      font-weight: 600;
+    .mini-head strong {
+      font-size: 0.96rem;
+      line-height: 1.2;
     }
 
-    .mini-chart-head span {
-      font-size: 0.78rem;
-      color: var(--muted);
-    }
-
-    .trend-layout {
+    .network-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.8fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.85fr);
       gap: 20px;
-      margin-bottom: 20px;
-    }
-
-    .metric-switches {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .metric-switch {
-      border: 1px solid rgba(23, 32, 38, 0.10);
-      background: rgba(255, 255, 255, 0.72);
-      color: var(--muted-strong);
-      padding: 9px 12px;
-      border-radius: 999px;
-      font: inherit;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
-    }
-
-    .metric-switch.active {
-      color: white;
-      background: var(--accent);
-      border-color: var(--accent);
     }
 
     #chart-network {
-      height: 350px;
+      height: 360px;
     }
 
-    .network-subtitle {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-
-    .signal-rail {
+    .insight-stack {
       display: grid;
       gap: 16px;
       align-content: start;
     }
 
-    .rail-card {
-      padding: 18px;
+    .insight-card {
       border-radius: var(--radius-lg);
       background: var(--panel-strong);
-      border: 1px solid rgba(23, 32, 38, 0.08);
-      box-shadow: 0 14px 32px rgba(53, 43, 29, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.76);
+      box-shadow: 0 18px 42px rgba(26, 45, 80, 0.10);
     }
 
-    .rail-card h3 {
-      margin: 0 0 14px;
-      font-family: var(--font-display);
-      font-size: 1rem;
-      letter-spacing: -0.03em;
+    .insight-card h3 {
+      margin: 0 0 12px;
+      color: var(--muted);
     }
 
-    .rail-list {
+    .insight-list {
       display: grid;
       gap: 10px;
     }
 
-    .rail-row {
+    .insight-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 12px;
-      padding: 12px 0;
+      padding-top: 10px;
       border-top: 1px solid var(--line);
     }
 
-    .rail-row:first-child { border-top: 0; padding-top: 0; }
+    .insight-row:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
 
-    .rail-city {
+    .insight-city {
       display: flex;
       align-items: center;
       gap: 10px;
       min-width: 0;
     }
 
-    .rail-dot {
+    .insight-dot {
       width: 10px;
       height: 10px;
       border-radius: 999px;
       flex-shrink: 0;
     }
 
-    .rail-city strong,
-    .rail-value {
+    .insight-city strong,
+    .insight-value {
       font-size: 0.92rem;
+      color: var(--text);
     }
 
-    .rail-city span,
-    .rail-sub {
+    .insight-city span,
+    .insight-sub {
       display: block;
-      font-size: 0.78rem;
-      color: var(--muted);
       margin-top: 3px;
-    }
-
-    .empty-state {
       color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.7;
-      padding: 8px 0 2px;
+      font-size: 0.78rem;
     }
 
-    .anomalies {
-      padding: 22px;
+    .anomaly-panel .panel-head {
+      margin-bottom: 20px;
     }
 
-    .anomaly-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-
-    .anomaly-header h2 {
-      margin: 0;
-      font-family: var(--font-display);
-      font-size: 1.16rem;
-      letter-spacing: -0.03em;
-    }
-
-    .anomaly-header p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-
-    .count-chip {
+    .anomaly-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 12px;
+      padding: 10px 13px;
       border-radius: 999px;
-      background: rgba(220, 38, 38, 0.10);
-      border: 1px solid rgba(220, 38, 38, 0.16);
       color: var(--danger);
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      background: var(--danger-soft);
+      border: 1px solid rgba(220, 38, 38, 0.16);
       white-space: nowrap;
     }
 
     .table-shell {
       overflow-x: auto;
-      border-radius: 20px;
-      border: 1px solid rgba(23, 32, 38, 0.07);
-      background: rgba(255, 255, 255, 0.76);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.68);
+      border: 1px solid rgba(255, 255, 255, 0.78);
     }
 
     table {
       width: 100%;
-      border-collapse: collapse;
       min-width: 780px;
+      border-collapse: collapse;
     }
 
     th,
     td {
-      text-align: left;
       padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
+      text-align: left;
       vertical-align: middle;
+      border-bottom: 1px solid var(--line);
     }
 
     th {
-      font-size: 0.72rem;
       color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      background: rgba(255, 255, 255, 0.66);
+      background: rgba(255, 255, 255, 0.76);
       position: sticky;
       top: 0;
     }
@@ -867,7 +888,7 @@
     }
 
     tbody tr:last-child td { border-bottom: 0; }
-    tbody tr:hover td { background: rgba(255, 255, 255, 0.58); }
+    tbody tr:hover td { background: rgba(255, 255, 255, 0.48); }
 
     .metric-pill,
     .direction-pill {
@@ -875,26 +896,39 @@
       align-items: center;
       padding: 6px 10px;
       border-radius: 999px;
-      font-size: 0.78rem;
-      font-weight: 600;
       border: 1px solid transparent;
+      font-size: 0.78rem;
+      font-weight: 700;
     }
 
-    .pill-temp { background: var(--cool-soft); color: var(--cool); border-color: rgba(37, 99, 235, 0.14); }
-    .pill-hum  { background: var(--accent-soft); color: var(--accent); border-color: rgba(15, 118, 110, 0.14); }
-    .pill-wind { background: var(--warm-soft); color: #b45309; border-color: rgba(245, 158, 11, 0.16); }
-    .pill-up   { background: var(--danger-soft); color: var(--danger); border-color: rgba(220, 38, 38, 0.16); }
-    .pill-down { background: rgba(37, 99, 235, 0.10); color: var(--cool); border-color: rgba(37, 99, 235, 0.14); }
+    .pill-temp { background: rgba(37, 99, 235, 0.10); color: #2563eb; border-color: rgba(37, 99, 235, 0.18); }
+    .pill-hum { background: rgba(15, 118, 110, 0.10); color: #0f766e; border-color: rgba(15, 118, 110, 0.18); }
+    .pill-wind { background: rgba(249, 115, 22, 0.12); color: #c2410c; border-color: rgba(249, 115, 22, 0.18); }
+    .pill-up { background: rgba(220, 38, 38, 0.10); color: #dc2626; border-color: rgba(220, 38, 38, 0.16); }
+    .pill-down { background: rgba(37, 99, 235, 0.10); color: #2563eb; border-color: rgba(37, 99, 235, 0.16); }
 
     .mono {
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1;
     }
 
+    .empty-state {
+      padding: 8px 0 2px;
+      font-size: 0.9rem;
+    }
+
+    .empty-card {
+      grid-column: 1 / -1;
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px dashed var(--line-strong);
+      background: rgba(255, 255, 255, 0.44);
+    }
+
     .no-data-row td {
       text-align: center;
+      padding: 42px 16px;
       color: var(--muted);
-      padding: 38px 16px;
     }
 
     .footer-note {
@@ -902,56 +936,56 @@
       justify-content: space-between;
       gap: 18px;
       margin-top: 18px;
+      padding: 0 4px;
       color: var(--muted);
       font-size: 0.82rem;
       line-height: 1.6;
-      padding: 0 4px;
     }
 
-    @media (max-width: 1240px) {
-      .hero,
-      .workspace,
-      .trend-layout {
-        grid-template-columns: 1fr;
+    @media (max-width: 1320px) {
+      .masthead,
+      .content-grid,
+      .network-grid,
+      .summary-grid {
+        grid-template-columns: 1fr 1fr;
       }
 
-      .metrics {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .focus-empty {
-        min-height: 260px;
+      .summary-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
     }
 
-    @media (max-width: 840px) {
+    @media (max-width: 980px) {
       body { padding: 16px; }
 
-      .hero,
-      .panel-block,
-      .anomalies {
-        padding: 18px;
-      }
-
-      .cities,
-      .focus-stats,
-      .status-grid,
-      .metrics {
+      .masthead,
+      .content-grid,
+      .network-grid,
+      .summary-grid {
         grid-template-columns: 1fr;
       }
 
-      .anomaly-header,
+      .city-grid,
+      .focus-notes,
+      .focus-stats,
+      .stage-grid {
+        grid-template-columns: 1fr;
+      }
+
       .panel-head,
-      .focus-title,
-      .focus-header,
+      .focus-top,
       .footer-note {
         flex-direction: column;
         align-items: flex-start;
       }
 
-      .hero-title {
+      .metric-switches {
+        justify-content: flex-start;
+      }
+
+      .masthead-title {
         max-width: none;
-        font-size: clamp(2.4rem, 12vw, 3.6rem);
+        font-size: clamp(2.8rem, 13vw, 4.2rem);
       }
 
       #chart-network {
@@ -961,169 +995,89 @@
   </style>
 </head>
 <body>
-  <main class="dashboard">
-    <section class="hero panel">
-      <div class="hero-copy">
-        <div class="eyebrow">Weather Ops View</div>
-        <h1 class="hero-title">Signal deck for live city weather.</h1>
+  <main class="shell">
+    <section class="panel masthead">
+      <div class="masthead-copy">
+        <div class="eyebrow">Live Weather Room</div>
+        <h1 class="masthead-title">More studio wall, less school project.</h1>
         <p>
-          This dashboard now reads like an operating surface instead of a default template:
-          fast scan at the top, city drill-down on the left, focus detail on the right,
-          and the anomaly feed where it belongs.
+          The dashboard is now built like a live control surface: stronger hierarchy,
+          more motion, clearer city comparison, and a focus panel that actually tells a story
+          instead of just repeating raw numbers.
         </p>
-        <div class="hero-notes">
-          <div class="note-chip">5 monitored cities</div>
-          <div class="note-chip">Auto-refresh every 60 seconds</div>
-          <div class="note-chip">Z-score anomaly detection</div>
+        <div class="masthead-tags">
+          <div class="masthead-tag">5 monitored cities</div>
+          <div class="masthead-tag">Auto-refresh every 60 seconds</div>
+          <div class="masthead-tag">Hourly Open-Meteo pipeline</div>
+          <div class="masthead-tag">Rolling z-score anomaly detection</div>
         </div>
       </div>
 
-      <div class="hero-status">
-        <div class="status-card">
-          <div class="status-top">
-            <div>
-              <div class="status-label">Control State</div>
-            </div>
-            <div class="live-indicator"><span class="live-dot"></span> Live</div>
+      <div class="masthead-stage">
+        <div class="stage-shell">
+          <div class="stage-card">
+            <div class="stage-kicker">Selected Atmosphere</div>
+            <div class="stage-city" id="scene-city">Waiting for signal</div>
+            <div class="stage-copy" id="scene-copy">Loading current city weather and network pressure.</div>
+            <div class="stage-foot" id="scene-foot">The interface will lock onto the strongest live signal as soon as data arrives.</div>
           </div>
 
-          <div class="status-grid">
-            <div class="status-item">
+          <div class="stage-grid">
+            <article>
               <span>Local Clock</span>
               <strong id="clock">--:--:--</strong>
-            </div>
-            <div class="status-item">
+            </article>
+            <article>
               <span>Last Refresh</span>
               <strong id="last-update">Loading</strong>
-            </div>
-            <div class="status-item">
-              <span>Selected City</span>
-              <strong id="hero-selected-city">Waiting for data</strong>
-            </div>
-            <div class="status-item">
-              <span>Alert State</span>
-              <strong id="hero-alert-state">Assessing</strong>
-            </div>
-          </div>
-
-          <div class="status-foot" id="hero-footnote">
-            Pulling current readings and the last 24 hours of trend data.
+            </article>
+            <article>
+              <span>Network State</span>
+              <strong id="scene-network-state">Assessing</strong>
+            </article>
+            <article>
+              <span>Alert Pressure</span>
+              <strong id="scene-alert-state">Scanning</strong>
+            </article>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="metrics" aria-label="Overview metrics">
-      <article class="metric-card">
-        <span>Hottest Site</span>
-        <strong id="stat-hottest">--</strong>
-        <p id="stat-hottest-sub">Waiting for the latest read.</p>
+    <section class="summary-grid" aria-label="Network highlights">
+      <article class="stat-card">
+        <span>Warmest City</span>
+        <strong id="stat-warmest">--</strong>
+        <p id="stat-warmest-sub">Waiting for the latest sample.</p>
       </article>
-      <article class="metric-card">
-        <span>Network Mean</span>
-        <strong id="stat-average">--</strong>
-        <p id="stat-average-sub">Average temperature across active cities.</p>
+      <article class="stat-card">
+        <span>Coldest City</span>
+        <strong id="stat-coldest">--</strong>
+        <p id="stat-coldest-sub">Waiting for the latest sample.</p>
       </article>
-      <article class="metric-card">
+      <article class="stat-card">
+        <span>Most Humid</span>
+        <strong id="stat-humid">--</strong>
+        <p id="stat-humid-sub">Humidity ranking will appear here.</p>
+      </article>
+      <article class="stat-card">
         <span>Strongest Wind</span>
         <strong id="stat-wind">--</strong>
-        <p id="stat-wind-sub">No city has surfaced yet.</p>
+        <p id="stat-wind-sub">Wind leader is still loading.</p>
       </article>
-      <article class="metric-card">
+      <article class="stat-card">
         <span>Alert Pressure</span>
-        <strong id="stat-anomalies">--</strong>
-        <p id="stat-anomalies-sub">Reviewing anomaly pressure.</p>
+        <strong id="stat-alerts">--</strong>
+        <p id="stat-alerts-sub">Watching anomaly traffic now.</p>
       </article>
     </section>
 
-    <section class="workspace">
-      <div class="panel panel-block">
+    <section class="content-grid">
+      <section class="panel board">
         <div class="panel-head">
           <div>
-            <h2>Current City Readings</h2>
-            <p>Click any city card to shift the focus panel and inspect its last 24 hours.</p>
-          </div>
-          <div class="subtle-badge" id="cities-badge">Sorting by current temperature</div>
-        </div>
-        <div class="cities" id="cities"></div>
-      </div>
-
-      <aside class="panel panel-block focus-panel" id="focus-panel">
-        <div class="focus-inner">
-          <div class="focus-title">
-            <h2>City Focus</h2>
-            <div class="focus-badge" id="detail-tag">Waiting</div>
-          </div>
-
-          <div class="focus-empty" id="focus-empty">
-            Select a city card to inspect its weather pulse, recent readings, and anomaly activity.
-          </div>
-
-          <div id="focus-content" hidden>
-            <div class="focus-header">
-              <div>
-                <div class="focus-city-name" id="focus-city-name">--</div>
-                <div class="focus-city-copy" id="focus-city-copy">No city selected.</div>
-              </div>
-              <div class="focus-pulse">
-                <span>Current Temp</span>
-                <strong id="focus-temp-big">--</strong>
-              </div>
-            </div>
-
-            <div class="focus-stats">
-              <div class="focus-stat">
-                <span>Humidity</span>
-                <strong id="focus-humidity">--</strong>
-              </div>
-              <div class="focus-stat">
-                <span>Wind Speed</span>
-                <strong id="focus-wind">--</strong>
-              </div>
-              <div class="focus-stat">
-                <span>Alert Count</span>
-                <strong id="focus-alerts">--</strong>
-              </div>
-              <div class="focus-stat">
-                <span>Latest Sample</span>
-                <strong id="focus-updated">--</strong>
-              </div>
-            </div>
-
-            <div class="mini-charts">
-              <div class="mini-chart-card">
-                <div class="mini-chart-head">
-                  <strong>Temperature</strong>
-                  <span id="temp-trend-note">Last 24h</span>
-                </div>
-                <div id="chart-detail-temp" style="height: 150px;"></div>
-              </div>
-              <div class="mini-chart-card">
-                <div class="mini-chart-head">
-                  <strong>Humidity</strong>
-                  <span>Last 24h</span>
-                </div>
-                <div id="chart-detail-hum" style="height: 140px;"></div>
-              </div>
-              <div class="mini-chart-card">
-                <div class="mini-chart-head">
-                  <strong>Wind Speed</strong>
-                  <span>Last 24h</span>
-                </div>
-                <div id="chart-detail-wind" style="height: 140px;"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </aside>
-    </section>
-
-    <section class="trend-layout">
-      <div class="panel panel-block">
-        <div class="panel-head">
-          <div>
-            <h2>Network Trend</h2>
-            <p class="network-subtitle" id="network-subtitle">Comparing temperature across all monitored cities.</p>
+            <h2>City Studio</h2>
+            <p id="board-subtitle">Ranking cities by current temperature.</p>
           </div>
           <div class="metric-switches" id="metric-switches">
             <button class="metric-switch active" data-metric="temperature_c">Temperature</button>
@@ -1131,28 +1085,111 @@
             <button class="metric-switch" data-metric="wind_speed_kmh">Wind Speed</button>
           </div>
         </div>
-        <div id="chart-network"></div>
-      </div>
+        <div class="city-grid" id="cities"></div>
+      </section>
 
-      <aside class="signal-rail">
-        <div class="rail-card">
-          <h3 id="ranking-title">Current temperature ranking</h3>
-          <div class="rail-list" id="ranking-list"></div>
+      <aside class="panel focus" id="focus-panel">
+        <div class="focus-empty" id="focus-empty">
+          Select a city card to open a richer weather breakdown with recent motion,
+          anomaly pressure, and 24-hour charts.
         </div>
-        <div class="rail-card">
-          <h3>Alert Hotspots</h3>
-          <div class="rail-list" id="hotspot-list"></div>
+
+        <div id="focus-content" hidden>
+          <div class="focus-top">
+            <div>
+              <div class="focus-code" id="focus-code">---</div>
+              <h2 id="focus-city-name">--</h2>
+              <div class="focus-story" id="focus-story">No city selected.</div>
+            </div>
+            <div class="focus-thermo">
+              <span>Current Temp</span>
+              <strong id="focus-temp-big">--</strong>
+            </div>
+          </div>
+
+          <div class="focus-notes" id="focus-notes"></div>
+
+          <div class="focus-stats">
+            <div class="focus-stat">
+              <span>Humidity</span>
+              <strong id="focus-humidity">--</strong>
+            </div>
+            <div class="focus-stat">
+              <span>Wind Speed</span>
+              <strong id="focus-wind">--</strong>
+            </div>
+            <div class="focus-stat">
+              <span>Alert Count</span>
+              <strong id="focus-alerts">--</strong>
+            </div>
+            <div class="focus-stat">
+              <span>Latest Sample</span>
+              <strong id="focus-updated">--</strong>
+            </div>
+          </div>
+
+          <div class="mini-grid">
+            <div class="mini-card">
+              <div class="mini-head">
+                <strong>Temperature Curve</strong>
+                <span id="temp-trend-note">Last 24h</span>
+              </div>
+              <div id="chart-detail-temp" style="height: 150px;"></div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-head">
+                <strong>Humidity Curve</strong>
+                <span>Last 24h</span>
+              </div>
+              <div id="chart-detail-hum" style="height: 140px;"></div>
+            </div>
+            <div class="mini-card">
+              <div class="mini-head">
+                <strong>Wind Curve</strong>
+                <span>Last 24h</span>
+              </div>
+              <div id="chart-detail-wind" style="height: 140px;"></div>
+            </div>
+          </div>
         </div>
       </aside>
     </section>
 
-    <section class="panel anomalies">
-      <div class="anomaly-header">
+    <section class="network-grid">
+      <section class="panel network-panel">
+        <div class="panel-head">
+          <div>
+            <h2>Network Motion</h2>
+            <p id="network-subtitle">Comparing temperature across the full set of monitored cities.</p>
+          </div>
+          <div class="subtle-badge" id="network-badge">Live multi-city view</div>
+        </div>
+        <div id="chart-network"></div>
+      </section>
+
+      <aside class="insight-stack">
+        <section class="insight-card">
+          <h3>Metric Movers</h3>
+          <div class="insight-list" id="movers-list"></div>
+        </section>
+        <section class="insight-card">
+          <h3>Alert Hotspots</h3>
+          <div class="insight-list" id="hotspot-list"></div>
+        </section>
+        <section class="insight-card">
+          <h3>Latest Refresh Order</h3>
+          <div class="insight-list" id="freshness-list"></div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="panel anomaly-panel">
+      <div class="panel-head">
         <div>
           <h2>Anomaly Feed</h2>
-          <p>Latest flagged readings from the rolling z-score monitor. High values show spikes, low values show drops.</p>
+          <p>Recent outliers from the rolling z-score monitor. Spikes flag upward pressure and drops flag sudden falloff.</p>
         </div>
-        <div class="count-chip" id="anomaly-count">0 active signals</div>
+        <div class="anomaly-badge" id="anomaly-count">0 active signals</div>
       </div>
 
       <div class="table-shell">
@@ -1177,25 +1214,25 @@
       </div>
 
       <div class="footer-note">
-        <div>Open-Meteo data feed · hourly pipeline cadence · PostgreSQL storage</div>
-        <div>Flask + Plotly front-end · threshold at |z| >= 2.5</div>
+        <div>Open-Meteo feed · PostgreSQL storage · Flask + Plotly front-end</div>
+        <div>Pipeline refresh cadence: hourly · Dashboard refresh cadence: 60s</div>
       </div>
     </section>
   </main>
 
   <script>
     const CITY_META = {
-      "New York City": { color: "#0f766e", code: "NYC" },
-      "Los Angeles": { color: "#ea580c", code: "LAX" },
-      "Chicago": { color: "#2563eb", code: "CHI" },
-      "London": { color: "#be185d", code: "LDN" },
-      "Tokyo": { color: "#4f46e5", code: "TYO" },
+      "New York City": { color: "#0f766e", code: "NYC", tag: "Atlantic rhythm" },
+      "Los Angeles": { color: "#ea580c", code: "LAX", tag: "Pacific heat" },
+      "Chicago": { color: "#2563eb", code: "CHI", tag: "Lakefront swing" },
+      "London": { color: "#be185d", code: "LDN", tag: "Cloud corridor" },
+      "Tokyo": { color: "#7c3aed", code: "TYO", tag: "Neon pressure" },
     };
 
     const METRIC_META = {
-      temperature_c: { label: "temperature", chartLabel: "Temperature", unit: "degC", suffix: "°C" },
-      humidity_pct: { label: "humidity", chartLabel: "Humidity", unit: "percent", suffix: "%" },
-      wind_speed_kmh: { label: "wind speed", chartLabel: "Wind Speed", unit: "km/h", suffix: " km/h" },
+      temperature_c: { label: "temperature", chartLabel: "Temperature", suffix: "°C", precision: 1 },
+      humidity_pct: { label: "humidity", chartLabel: "Humidity", suffix: "%", precision: 0 },
+      wind_speed_kmh: { label: "wind speed", chartLabel: "Wind Speed", suffix: " km/h", precision: 1 },
     };
 
     const ANOMALY_META = {
@@ -1207,18 +1244,19 @@
     const BASE_LAYOUT = {
       paper_bgcolor: "transparent",
       plot_bgcolor: "transparent",
-      font: { family: '"IBM Plex Sans", system-ui, sans-serif', color: "#5d676d", size: 11 },
-      margin: { t: 16, r: 14, b: 38, l: 42 },
+      font: { family: '"Sora", system-ui, sans-serif', color: "#506178", size: 11 },
+      margin: { t: 10, r: 10, b: 38, l: 42 },
       hovermode: "x unified",
+      hoverlabel: { bgcolor: "rgba(255,255,255,0.94)", font: { family: '"Sora", system-ui, sans-serif', color: "#0f172a" } },
       xaxis: {
-        gridcolor: "rgba(23,32,38,0.06)",
-        linecolor: "rgba(23,32,38,0.10)",
+        gridcolor: "rgba(15, 23, 42, 0.06)",
+        linecolor: "rgba(15, 23, 42, 0.12)",
         tickfont: { size: 10 },
         zeroline: false,
       },
       yaxis: {
-        gridcolor: "rgba(23,32,38,0.06)",
-        linecolor: "rgba(23,32,38,0.10)",
+        gridcolor: "rgba(15, 23, 42, 0.06)",
+        linecolor: "rgba(15, 23, 42, 0.12)",
         tickfont: { size: 10 },
         zeroline: false,
       },
@@ -1233,19 +1271,19 @@
     const MINI_LAYOUT = {
       paper_bgcolor: "transparent",
       plot_bgcolor: "transparent",
-      font: { family: '"IBM Plex Sans", system-ui, sans-serif', color: "#667178", size: 10 },
+      font: { family: '"Sora", system-ui, sans-serif', color: "#64748b", size: 10 },
       margin: { t: 10, r: 12, b: 28, l: 34 },
       hovermode: "x unified",
       showlegend: false,
       xaxis: {
-        gridcolor: "rgba(23,32,38,0.05)",
-        linecolor: "rgba(23,32,38,0.08)",
+        gridcolor: "rgba(15, 23, 42, 0.05)",
+        linecolor: "rgba(15, 23, 42, 0.10)",
         tickfont: { size: 9 },
         zeroline: false,
       },
       yaxis: {
-        gridcolor: "rgba(23,32,38,0.05)",
-        linecolor: "rgba(23,32,38,0.08)",
+        gridcolor: "rgba(15, 23, 42, 0.05)",
+        linecolor: "rgba(15, 23, 42, 0.10)",
         tickfont: { size: 9 },
         zeroline: false,
       },
@@ -1260,7 +1298,24 @@
     let anomalyData = [];
 
     function getCityMeta(city) {
-      return CITY_META[city] || { color: "#0f766e", code: city.slice(0, 3).toUpperCase() };
+      if (CITY_META[city]) return CITY_META[city];
+      return {
+        color: "#2563eb",
+        code: city.slice(0, 3).toUpperCase(),
+        tag: "Live weather signal",
+      };
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function colorMix(hex, alpha) {
+      const clean = hex.replace("#", "");
+      const r = parseInt(clean.slice(0, 2), 16);
+      const g = parseInt(clean.slice(2, 4), 16);
+      const b = parseInt(clean.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
     function formatObservedTime(value) {
@@ -1293,32 +1348,55 @@
       return `${days}d ago`;
     }
 
-    function formatValue(metric, value, digits = 1) {
+    function formatValue(metric, value, digits = METRIC_META[metric]?.precision ?? 1) {
       if (value == null || Number.isNaN(value)) return "N/A";
-      const meta = METRIC_META[metric];
-      return `${Number(value).toFixed(digits)}${meta.suffix}`;
+      return `${Number(value).toFixed(digits)}${METRIC_META[metric].suffix}`;
     }
 
     function conditionLabel(temp) {
       if (temp == null) return "No signal";
-      if (temp < 0) return "Freezing edge";
+      if (temp < 0) return "Hard freeze";
       if (temp < 8) return "Cold lane";
-      if (temp < 16) return "Cool and steady";
+      if (temp < 16) return "Cool drift";
       if (temp < 24) return "Comfort zone";
-      if (temp < 31) return "Warm build";
+      if (temp < 31) return "Warm push";
       return "Heat pressure";
+    }
+
+    function humidityLabel(value) {
+      if (value == null) return "Humidity unknown";
+      if (value < 35) return "Dry air";
+      if (value < 60) return "Balanced air";
+      if (value < 75) return "Moist air";
+      return "Heavy moisture";
+    }
+
+    function windLabel(value) {
+      if (value == null) return "Wind unknown";
+      if (value < 10) return "Calm";
+      if (value < 20) return "Moving";
+      if (value < 30) return "Breezy";
+      return "Forceful";
     }
 
     function cityRows(city) {
       return trendsData.filter(row => row.location === city);
     }
 
+    function cityAnomalies(city) {
+      return anomalyData.filter(item => item.city === city);
+    }
+
     function cityAnomalyCount(city) {
-      return anomalyData.filter(item => item.city === city).length;
+      return cityAnomalies(city).length;
     }
 
     function sortCurrentByMetric(metric) {
       return [...currentData].sort((a, b) => (b[metric] ?? -Infinity) - (a[metric] ?? -Infinity));
+    }
+
+    function lowestByMetric(metric) {
+      return [...currentData].sort((a, b) => (a[metric] ?? Infinity) - (b[metric] ?? Infinity))[0];
     }
 
     function averageMetric(metric) {
@@ -1333,8 +1411,56 @@
       return Math.max(...values) - Math.min(...values);
     }
 
+    function cityDelta(city, metric = "temperature_c") {
+      const values = cityRows(city).map(row => row[metric]).filter(value => value != null);
+      if (values.length < 2) return null;
+      return values[values.length - 1] - values[0];
+    }
+
+    function trendNarrative(city, metric = "temperature_c") {
+      const delta = cityDelta(city, metric);
+      if (delta == null) return "Trend still building";
+
+      const precision = METRIC_META[metric].precision;
+      const magnitude = Math.abs(delta).toFixed(precision);
+      const suffix = METRIC_META[metric].suffix;
+      const threshold = metric === "humidity_pct" ? 2 : 0.5;
+
+      if (Math.abs(delta) < threshold) {
+        return `${METRIC_META[metric].chartLabel} holding steady`;
+      }
+
+      return delta > 0
+        ? `${METRIC_META[metric].chartLabel} up ${magnitude}${suffix} in 24h`
+        : `${METRIC_META[metric].chartLabel} down ${magnitude}${suffix} in 24h`;
+    }
+
+    function alertState() {
+      const count = anomalyData.length;
+      if (count === 0) return "Quiet";
+      if (count < 4) return "Watch";
+      if (count < 10) return "Elevated";
+      return "Intense";
+    }
+
+    function networkState() {
+      const spread = spreadMetric("temperature_c");
+      const anomalies = anomalyData.length;
+      if (spread == null) return "Waiting";
+      if (spread < 8 && anomalies === 0) return "Stable";
+      if (spread < 14 && anomalies < 4) return "Variable";
+      return "Turbulent";
+    }
+
+    function metricBarPercent(metric, value) {
+      if (value == null) return 0;
+      if (metric === "temperature_c") return clamp(((value + 10) / 45) * 100, 6, 100);
+      if (metric === "humidity_pct") return clamp(value, 6, 100);
+      return clamp((value / 45) * 100, 6, 100);
+    }
+
     function sparklineMarkup(city, color) {
-      const values = cityRows(city).map(row => row.temperature_c).filter(value => value != null);
+      const values = cityRows(city).map(row => row[selectedMetric]).filter(value => value != null);
       if (!values.length) {
         return `<div class="empty-state">Trend unavailable</div>`;
       }
@@ -1344,162 +1470,193 @@
       const span = max - min || 1;
       const points = values.map((value, index) => {
         const x = values.length === 1 ? 50 : (index / (values.length - 1)) * 100;
-        const y = 30 - ((value - min) / span) * 20;
+        const y = 34 - ((value - min) / span) * 24;
         return `${x},${y}`;
       }).join(" ");
 
       return `
-        <svg viewBox="0 0 100 32" preserveAspectRatio="none" aria-hidden="true">
-          <polyline fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${points}"></polyline>
+        <svg viewBox="0 0 100 38" preserveAspectRatio="none" aria-hidden="true">
+          <polyline fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${points}"></polyline>
         </svg>
       `;
     }
 
-    function trendNarrative(city) {
-      const rows = cityRows(city).filter(row => row.temperature_c != null);
-      if (rows.length < 2) return "Trend still building";
-      const delta = rows[rows.length - 1].temperature_c - rows[0].temperature_c;
-      if (Math.abs(delta) < 0.5) return "Flat over 24h";
-      return delta > 0
-        ? `Warming ${delta.toFixed(1)}°C in 24h`
-        : `Cooling ${Math.abs(delta).toFixed(1)}°C in 24h`;
-    }
-
-    function tick() {
-      document.getElementById("clock").textContent = formatClockTime(Date.now());
+    function buildEmptyChart(message) {
+      return {
+        annotations: [{
+          text: message,
+          showarrow: false,
+          x: 0.5,
+          y: 0.5,
+          xref: "paper",
+          yref: "paper",
+          font: { family: '"Sora", system-ui, sans-serif', size: 12, color: "#64748b" },
+        }],
+        xaxis: { visible: false },
+        yaxis: { visible: false },
+      };
     }
 
     function buildNetworkTraces(metric) {
       const byCity = {};
+
       trendsData.forEach(row => {
+        if (row[metric] == null) return;
         if (!byCity[row.location]) byCity[row.location] = { x: [], y: [] };
         byCity[row.location].x.push(row.reading_time);
         byCity[row.location].y.push(row[metric]);
       });
 
-      return Object.entries(byCity).map(([city, values]) => ({
+      return Object.entries(byCity).map(([city, series]) => ({
         type: "scatter",
         mode: "lines",
         name: city,
-        x: values.x,
-        y: values.y,
+        x: series.x,
+        y: series.y,
         line: {
           color: getCityMeta(city).color,
           width: city === selectedCity ? 4 : 2.4,
           shape: "spline",
-          smoothing: 0.6,
+          smoothing: 0.58,
         },
-        opacity: city === selectedCity || !selectedCity ? 1 : 0.6,
+        opacity: city === selectedCity || !selectedCity ? 1 : 0.55,
       }));
     }
 
-    function renderHero() {
-      document.getElementById("hero-selected-city").textContent = selectedCity || "No city selected";
+    function applyTheme() {
+      const root = document.documentElement;
+      const meta = getCityMeta(selectedCity || "Chicago");
+      root.style.setProperty("--accent", meta.color);
+      root.style.setProperty("--accent-soft", colorMix(meta.color, 0.12));
+      root.style.setProperty("--accent-glow", colorMix(meta.color, 0.26));
+      root.style.setProperty("--accent-border", colorMix(meta.color, 0.20));
+    }
 
-      if (!currentData.length) {
-        document.getElementById("hero-alert-state").textContent = "No data";
-        document.getElementById("hero-footnote").textContent = "Current readings have not arrived yet.";
+    function renderClock() {
+      document.getElementById("clock").textContent = formatClockTime(Date.now());
+    }
+
+    function renderMasthead() {
+      const city = currentData.find(item => item.location === selectedCity) || currentData[0];
+      const avg = averageMetric("temperature_c");
+      const spread = spreadMetric("temperature_c");
+
+      if (!city) {
+        document.getElementById("scene-city").textContent = "Waiting for signal";
+        document.getElementById("scene-copy").textContent = "Loading current city weather and network pressure.";
+        document.getElementById("scene-foot").textContent = "The interface will lock onto the strongest live signal as soon as data arrives.";
+        document.getElementById("scene-network-state").textContent = "Waiting";
+        document.getElementById("scene-alert-state").textContent = "Scanning";
         return;
       }
 
-      const avgTemp = averageMetric("temperature_c");
-      const anomalyCount = anomalyData.length;
-      const pulse = anomalyCount === 0 ? "Quiet" : anomalyCount < 5 ? "Watch" : "Elevated";
-      const spread = spreadMetric("temperature_c");
-      const avgLabel = avgTemp == null ? "N/A" : `${avgTemp.toFixed(1)}°C`;
-      const spreadLabel = spread == null ? "N/A" : `${spread.toFixed(1)}°C`;
-
-      document.getElementById("hero-alert-state").textContent = pulse;
-      document.getElementById("hero-footnote").textContent =
-        `Network mean ${avgLabel} with a ${spreadLabel} spread across ${currentData.length} cities.`;
+      const meta = getCityMeta(city.location);
+      document.getElementById("scene-city").textContent = `${city.location} · ${formatValue("temperature_c", city.temperature_c)}`;
+      document.getElementById("scene-copy").textContent =
+        `${meta.tag} with ${humidityLabel(city.humidity_pct).toLowerCase()} and ${windLabel(city.wind_speed_kmh).toLowerCase()}.`;
+      document.getElementById("scene-foot").textContent =
+        `Network mean ${avg == null ? "N/A" : `${avg.toFixed(1)}°C`} with a ${spread == null ? "N/A" : `${spread.toFixed(1)}°C`} spread across ${currentData.length} cities.`;
+      document.getElementById("scene-network-state").textContent = networkState();
+      document.getElementById("scene-alert-state").textContent = alertState();
     }
 
-    function renderMetrics() {
+    function renderSummary() {
       if (!currentData.length) return;
 
-      const hottest = sortCurrentByMetric("temperature_c")[0];
-      const windiest = sortCurrentByMetric("wind_speed_kmh")[0];
-      const avgTemp = averageMetric("temperature_c");
-      const anomalyCount = anomalyData.length;
-      const spread = spreadMetric("temperature_c");
+      const warmest = sortCurrentByMetric("temperature_c")[0];
+      const coldest = lowestByMetric("temperature_c");
+      const humid = sortCurrentByMetric("humidity_pct")[0];
+      const windy = sortCurrentByMetric("wind_speed_kmh")[0];
+      const count = anomalyData.length;
 
-      document.getElementById("stat-hottest").textContent = hottest.location;
-      document.getElementById("stat-hottest-sub").textContent = `${formatValue("temperature_c", hottest.temperature_c)} right now`;
+      document.getElementById("stat-warmest").textContent = warmest.location;
+      document.getElementById("stat-warmest-sub").textContent = `${formatValue("temperature_c", warmest.temperature_c)} and ${conditionLabel(warmest.temperature_c).toLowerCase()}.`;
 
-      document.getElementById("stat-average").textContent = avgTemp == null ? "N/A" : `${avgTemp.toFixed(1)}°C`;
-      document.getElementById("stat-average-sub").textContent =
-        `${currentData.length} cities live, spread ${spread == null ? "N/A" : `${spread.toFixed(1)}°C`}`;
+      document.getElementById("stat-coldest").textContent = coldest.location;
+      document.getElementById("stat-coldest-sub").textContent = `${formatValue("temperature_c", coldest.temperature_c)} on the cool end of the network.`;
 
-      document.getElementById("stat-wind").textContent = windiest.location;
-      document.getElementById("stat-wind-sub").textContent = `${formatValue("wind_speed_kmh", windiest.wind_speed_kmh)} sustained`;
+      document.getElementById("stat-humid").textContent = humid.location;
+      document.getElementById("stat-humid-sub").textContent = `${formatValue("humidity_pct", humid.humidity_pct, 0)} with ${humidityLabel(humid.humidity_pct).toLowerCase()}.`;
 
-      document.getElementById("stat-anomalies").textContent = anomalyCount.toString();
-      document.getElementById("stat-anomalies-sub").textContent =
-        anomalyCount === 0 ? "No active statistical outliers in the last feed." : `${anomalyCount} recent outliers need review.`;
+      document.getElementById("stat-wind").textContent = windy.location;
+      document.getElementById("stat-wind-sub").textContent = `${formatValue("wind_speed_kmh", windy.wind_speed_kmh)} and ${windLabel(windy.wind_speed_kmh).toLowerCase()}.`;
+
+      document.getElementById("stat-alerts").textContent = count.toString();
+      document.getElementById("stat-alerts-sub").textContent =
+        count === 0 ? "No current outliers across the monitored set." : `${count} recent outliers are shaping the alert mood.`;
     }
 
     function renderCities() {
       const container = document.getElementById("cities");
+      const metricMeta = METRIC_META[selectedMetric];
+      const sorted = sortCurrentByMetric(selectedMetric);
+
+      document.getElementById("board-subtitle").textContent = `Ranking cities by current ${metricMeta.label}. Click a card to inspect the full city breakdown.`;
       container.innerHTML = "";
 
-      if (!currentData.length) {
-        container.innerHTML = `<div class="empty-state">Current city cards will appear when the first dataset arrives.</div>`;
+      if (!sorted.length) {
+        container.innerHTML = `<div class="empty-card empty-state">City cards will appear when the first dataset arrives.</div>`;
         return;
       }
 
-      const sorted = sortCurrentByMetric("temperature_c");
-      document.getElementById("cities-badge").textContent = "Sorting by current temperature";
-
-      sorted.forEach(city => {
+      sorted.forEach((city, index) => {
         const meta = getCityMeta(city.location);
         const card = document.createElement("article");
+        const anomalyCount = cityAnomalyCount(city.location);
         card.className = `city-card${city.location === selectedCity ? " active" : ""}`;
         card.style.setProperty("--city-color", meta.color);
+        card.style.setProperty("--city-soft", colorMix(meta.color, 0.12));
+        card.style.setProperty("--city-border", colorMix(meta.color, 0.20));
+
         card.innerHTML = `
-          <div class="city-card-top">
+          <div class="city-top">
             <div>
-              <div class="city-label">Current Reading</div>
+              <div class="city-label">${metricMeta.chartLabel} Rank</div>
               <div class="city-name">${city.location}</div>
-              <div class="city-read-time">Latest sample ${relativeFromNow(city.reading_time)}</div>
+              <div class="city-meta">${relativeFromNow(city.reading_time)} · ${meta.tag}</div>
             </div>
-            <div class="city-code">${meta.code}</div>
+            <div class="city-rank">#${index + 1}</div>
           </div>
 
-          <div class="city-temp">${city.temperature_c != null ? `${city.temperature_c.toFixed(1)}°` : "N/A"}</div>
-          <div class="city-condition">${conditionLabel(city.temperature_c)}</div>
+          <div class="city-temp">${city.temperature_c == null ? "N/A" : `${city.temperature_c.toFixed(1)}°`}</div>
+          <div class="city-copy">${conditionLabel(city.temperature_c)} with ${trendNarrative(city.location, selectedMetric).toLowerCase()}.</div>
 
-          <div class="city-meta-row">
-            <div class="city-meta">
-              <span>Humidity</span>
-              <strong>${formatValue("humidity_pct", city.humidity_pct, 0)}</strong>
+          <div class="city-bars">
+            <div class="city-bar-row">
+              <div class="bar-label">Humidity</div>
+              <div class="meter"><div class="meter-fill" style="width:${metricBarPercent("humidity_pct", city.humidity_pct)}%"></div></div>
+              <div class="bar-value">${formatValue("humidity_pct", city.humidity_pct, 0)}</div>
             </div>
-            <div class="city-meta">
-              <span>Wind</span>
-              <strong>${formatValue("wind_speed_kmh", city.wind_speed_kmh, 1)}</strong>
+            <div class="city-bar-row">
+              <div class="bar-label">Wind</div>
+              <div class="meter"><div class="meter-fill" style="width:${metricBarPercent("wind_speed_kmh", city.wind_speed_kmh)}%"></div></div>
+              <div class="bar-value">${formatValue("wind_speed_kmh", city.wind_speed_kmh)}</div>
+            </div>
+            <div class="city-bar-row">
+              <div class="bar-label">${metricMeta.chartLabel}</div>
+              <div class="meter"><div class="meter-fill" style="width:${metricBarPercent(selectedMetric, city[selectedMetric])}%"></div></div>
+              <div class="bar-value">${formatValue(selectedMetric, city[selectedMetric], metricMeta.precision)}</div>
             </div>
           </div>
 
           <div class="sparkline">${sparklineMarkup(city.location, meta.color)}</div>
 
-          <div class="city-trend-row">
-            <span>${trendNarrative(city.location)}</span>
-            <span>${cityAnomalyCount(city.location)} alerts</span>
+          <div class="city-bottom">
+            <small>${trendNarrative(city.location)}</small>
+            <div class="city-pill">${anomalyCount} alerts</div>
           </div>
         `;
+
         card.addEventListener("click", () => selectCity(city.location));
         container.appendChild(card);
       });
     }
 
-    function renderFocusPanel() {
+    function renderFocus() {
       const empty = document.getElementById("focus-empty");
       const content = document.getElementById("focus-content");
-      const panel = document.getElementById("focus-panel");
-      const badge = document.getElementById("detail-tag");
 
       if (!selectedCity) {
-        panel.style.setProperty("--focus-color", "#0f766e");
-        badge.textContent = "Waiting";
         empty.hidden = false;
         content.hidden = true;
         return;
@@ -1512,112 +1669,158 @@
         return;
       }
 
-      const rows = cityRows(selectedCity);
       const meta = getCityMeta(selectedCity);
-      panel.style.setProperty("--focus-color", meta.color);
-      badge.textContent = meta.code;
+      const rows = cityRows(selectedCity);
+      const tempDelta = cityDelta(selectedCity, "temperature_c");
+      const metricDelta = cityDelta(selectedCity, selectedMetric);
+      const alerts = cityAnomalies(selectedCity);
+      const latestAlert = alerts[0];
 
+      document.getElementById("focus-code").textContent = meta.code;
       document.getElementById("focus-city-name").textContent = selectedCity;
-      document.getElementById("focus-city-copy").textContent =
-        `${conditionLabel(current.temperature_c)} · ${trendNarrative(selectedCity)} · ${rows.length} hourly points in view.`;
+      document.getElementById("focus-story").textContent =
+        `${meta.tag} with ${conditionLabel(current.temperature_c).toLowerCase()}, ${humidityLabel(current.humidity_pct).toLowerCase()}, and ${windLabel(current.wind_speed_kmh).toLowerCase()}.`;
       document.getElementById("focus-temp-big").textContent = formatValue("temperature_c", current.temperature_c);
       document.getElementById("focus-humidity").textContent = formatValue("humidity_pct", current.humidity_pct, 0);
       document.getElementById("focus-wind").textContent = formatValue("wind_speed_kmh", current.wind_speed_kmh);
-      document.getElementById("focus-alerts").textContent = `${cityAnomalyCount(selectedCity)} flagged readings`;
+      document.getElementById("focus-alerts").textContent = alerts.length === 0 ? "No recent outliers" : `${alerts.length} flagged readings`;
       document.getElementById("focus-updated").textContent = formatObservedTime(current.reading_time);
       document.getElementById("temp-trend-note").textContent = trendNarrative(selectedCity);
+
+      document.getElementById("focus-notes").innerHTML = `
+        <div class="focus-note">
+          <span>24h Temperature</span>
+          <strong>${tempDelta == null ? "Not enough history yet." : trendNarrative(selectedCity)}</strong>
+        </div>
+        <div class="focus-note">
+          <span>${METRIC_META[selectedMetric].chartLabel} Motion</span>
+          <strong>${metricDelta == null ? "No comparison available yet." : trendNarrative(selectedCity, selectedMetric)}</strong>
+        </div>
+        <div class="focus-note">
+          <span>Alert Read</span>
+          <strong>${latestAlert ? `Latest ${ANOMALY_META[latestAlert.metric]?.[0] || latestAlert.metric} event ${relativeFromNow(latestAlert.detected_at)}.` : "No recent anomaly traffic for this city."}</strong>
+        </div>
+      `;
 
       empty.hidden = true;
       content.hidden = false;
 
-      renderCityMiniCharts(selectedCity);
+      renderCityMiniCharts(selectedCity, rows, meta.color);
     }
 
-    function renderCityMiniCharts(city) {
-      const rows = cityRows(city);
-      const meta = getCityMeta(city);
+    function renderMiniChart(target, x, y, color, fillColor, yTitle, message, extra = {}) {
+      if (!x.length || !y.some(value => value != null)) {
+        Plotly.react(target, [], { ...MINI_LAYOUT, ...buildEmptyChart(message) }, PLOT_CONFIG);
+        return;
+      }
+
+      Plotly.react(target, [{
+        type: "scatter",
+        mode: extra.mode || "lines",
+        x,
+        y,
+        line: { color, width: extra.width || 2.8, shape: "spline", smoothing: 0.55 },
+        marker: extra.marker,
+        fill: extra.fill ? "tozeroy" : undefined,
+        fillcolor: fillColor,
+      }], {
+        ...MINI_LAYOUT,
+        yaxis: { ...MINI_LAYOUT.yaxis, title: { text: yTitle, font: { size: 9, color: "#64748b" } } },
+      }, PLOT_CONFIG);
+    }
+
+    function renderCityMiniCharts(city, rows, accentColor) {
       const x = rows.map(row => row.reading_time);
-
-      Plotly.react("chart-detail-temp", [{
-        type: "scatter",
-        mode: "lines",
+      renderMiniChart(
+        "chart-detail-temp",
         x,
-        y: rows.map(row => row.temperature_c),
-        line: { color: meta.color, width: 3, shape: "spline", smoothing: 0.55 },
-        fill: "tozeroy",
-        fillcolor: colorMix(meta.color, 0.18),
-      }], {
-        ...MINI_LAYOUT,
-        yaxis: { ...MINI_LAYOUT.yaxis, title: { text: "°C", font: { size: 9, color: "#6b757b" } } },
-      }, PLOT_CONFIG);
-
-      Plotly.react("chart-detail-hum", [{
-        type: "scatter",
-        mode: "lines",
+        rows.map(row => row.temperature_c),
+        accentColor,
+        colorMix(accentColor, 0.18),
+        "°C",
+        "Temperature history is still building.",
+        { fill: true, width: 3.1 }
+      );
+      renderMiniChart(
+        "chart-detail-hum",
         x,
-        y: rows.map(row => row.humidity_pct),
-        line: { color: "#0f766e", width: 2.6, shape: "spline", smoothing: 0.55 },
-        fill: "tozeroy",
-        fillcolor: "rgba(15,118,110,0.10)",
-      }], {
-        ...MINI_LAYOUT,
-        yaxis: { ...MINI_LAYOUT.yaxis, title: { text: "%", font: { size: 9, color: "#6b757b" } } },
-      }, PLOT_CONFIG);
-
-      Plotly.react("chart-detail-wind", [{
-        type: "scatter",
-        mode: "lines+markers",
+        rows.map(row => row.humidity_pct),
+        "#0f766e",
+        "rgba(15, 118, 110, 0.10)",
+        "%",
+        "Humidity history is still building.",
+        { fill: true, width: 2.6 }
+      );
+      renderMiniChart(
+        "chart-detail-wind",
         x,
-        y: rows.map(row => row.wind_speed_kmh),
-        line: { color: "#ea580c", width: 2.4, shape: "spline", smoothing: 0.5 },
-        marker: { size: 5, color: "#ea580c" },
-      }], {
-        ...MINI_LAYOUT,
-        yaxis: { ...MINI_LAYOUT.yaxis, title: { text: "km/h", font: { size: 9, color: "#6b757b" } } },
-      }, PLOT_CONFIG);
+        rows.map(row => row.wind_speed_kmh),
+        "#f97316",
+        "rgba(249, 115, 22, 0.12)",
+        "km/h",
+        "Wind history is still building.",
+        {
+          mode: "lines+markers",
+          width: 2.3,
+          marker: { size: 5, color: "#f97316" },
+        }
+      );
     }
 
     function renderNetworkChart() {
       const metricMeta = METRIC_META[selectedMetric];
       const avg = averageMetric(selectedMetric);
       const spread = spreadMetric(selectedMetric);
-      const focusCopy = selectedCity ? ` Focus line: ${selectedCity}.` : "";
+      const traces = buildNetworkTraces(selectedMetric);
 
       document.getElementById("network-subtitle").textContent =
-        `Comparing ${metricMeta.label} across all monitored cities. Mean ${avg == null ? "N/A" : avg.toFixed(1)}${metricMeta.suffix}, spread ${spread == null ? "N/A" : spread.toFixed(1)}${metricMeta.suffix}.${focusCopy}`;
+        `Comparing ${metricMeta.label} across all monitored cities. Mean ${avg == null ? "N/A" : `${avg.toFixed(metricMeta.precision)}${metricMeta.suffix}`}, spread ${spread == null ? "N/A" : `${spread.toFixed(metricMeta.precision)}${metricMeta.suffix}`}.${selectedCity ? ` Focus line: ${selectedCity}.` : ""}`;
+      document.getElementById("network-badge").textContent = `Live ${metricMeta.label} view`;
 
-      Plotly.react("chart-network", buildNetworkTraces(selectedMetric), {
+      if (!traces.length) {
+        Plotly.react("chart-network", [], { ...BASE_LAYOUT, ...buildEmptyChart("No trend data yet.") }, PLOT_CONFIG);
+        return;
+      }
+
+      Plotly.react("chart-network", traces, {
         ...BASE_LAYOUT,
         yaxis: {
           ...BASE_LAYOUT.yaxis,
-          title: { text: metricMeta.chartLabel, font: { size: 10, color: "#5d676d" } },
+          title: { text: metricMeta.chartLabel, font: { size: 10, color: "#506178" } },
         },
       }, PLOT_CONFIG);
     }
 
-    function renderRanking() {
+    function renderMovers() {
+      const container = document.getElementById("movers-list");
       const metricMeta = METRIC_META[selectedMetric];
-      const title = document.getElementById("ranking-title");
-      const list = document.getElementById("ranking-list");
-      title.textContent = `Current ${metricMeta.label} ranking`;
 
-      if (!currentData.length) {
-        list.innerHTML = `<div class="empty-state">Ranked readings will appear when live data is available.</div>`;
+      const movers = currentData.map(item => ({
+        city: item.location,
+        delta: cityDelta(item.location, selectedMetric),
+      }))
+        .filter(item => item.delta != null)
+        .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+        .slice(0, 5);
+
+      if (!movers.length) {
+        container.innerHTML = `<div class="empty-state">Movers will appear when enough history accumulates.</div>`;
         return;
       }
 
-      list.innerHTML = sortCurrentByMetric(selectedMetric).map(item => {
-        const meta = getCityMeta(item.location);
+      container.innerHTML = movers.map(item => {
+        const meta = getCityMeta(item.city);
+        const rising = item.delta > 0;
         return `
-          <div class="rail-row">
-            <div class="rail-city">
-              <span class="rail-dot" style="background:${meta.color}"></span>
+          <div class="insight-row">
+            <div class="insight-city">
+              <span class="insight-dot" style="background:${meta.color}"></span>
               <div>
-                <strong>${item.location}</strong>
-                <span>${conditionLabel(item.temperature_c)}</span>
+                <strong>${item.city}</strong>
+                <span>${rising ? "Rising" : "Falling"} ${metricMeta.label}</span>
               </div>
             </div>
-            <div class="rail-value mono">${formatValue(selectedMetric, item[selectedMetric], selectedMetric === "humidity_pct" ? 0 : 1)}</div>
+            <div class="insight-value mono">${rising ? "+" : "-"}${Math.abs(item.delta).toFixed(metricMeta.precision)}${metricMeta.suffix}</div>
           </div>
         `;
       }).join("");
@@ -1627,7 +1830,7 @@
       const container = document.getElementById("hotspot-list");
 
       if (!anomalyData.length) {
-        container.innerHTML = `<div class="empty-state">No anomaly hotspots right now. The pipeline is quiet.</div>`;
+        container.innerHTML = `<div class="empty-state">No anomaly hotspots right now. The network is quiet.</div>`;
         return;
       }
 
@@ -1646,15 +1849,43 @@
         .map(([city, info]) => {
           const meta = getCityMeta(city);
           return `
-            <div class="rail-row">
-              <div class="rail-city">
-                <span class="rail-dot" style="background:${meta.color}"></span>
+            <div class="insight-row">
+              <div class="insight-city">
+                <span class="insight-dot" style="background:${meta.color}"></span>
                 <div>
                   <strong>${city}</strong>
                   <span>Last ${ANOMALY_META[info.metric]?.[0] || info.metric} event ${relativeFromNow(info.last)}</span>
                 </div>
               </div>
-              <div class="rail-value mono">${info.count}</div>
+              <div class="insight-value mono">${info.count}</div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function renderFreshness() {
+      const container = document.getElementById("freshness-list");
+
+      if (!currentData.length) {
+        container.innerHTML = `<div class="empty-state">Refresh order will appear when the first poll succeeds.</div>`;
+        return;
+      }
+
+      container.innerHTML = [...currentData]
+        .sort((a, b) => new Date(b.reading_time) - new Date(a.reading_time))
+        .map(item => {
+          const meta = getCityMeta(item.location);
+          return `
+            <div class="insight-row">
+              <div class="insight-city">
+                <span class="insight-dot" style="background:${meta.color}"></span>
+                <div>
+                  <strong>${item.location}</strong>
+                  <span>Latest sample ${formatObservedTime(item.reading_time)}</span>
+                </div>
+              </div>
+              <div class="insight-value mono">${relativeFromNow(item.reading_time)}</div>
             </div>
           `;
         })
@@ -1684,16 +1915,16 @@
         return `
           <tr>
             <td>
-              <div class="rail-city">
-                <span class="rail-dot" style="background:${meta.color}"></span>
+              <div class="insight-city">
+                <span class="insight-dot" style="background:${meta.color}"></span>
                 <div>
                   <strong>${item.city}</strong>
-                  <span class="rail-sub">${relativeFromNow(item.detected_at)}</span>
+                  <span class="insight-sub">${relativeFromNow(item.detected_at)}</span>
                 </div>
               </div>
             </td>
             <td><span class="metric-pill ${pillClass}">${label}</span></td>
-            <td class="mono">${formatValue(item.metric, item.value, 1)}</td>
+            <td class="mono">${formatValue(item.metric, item.value, METRIC_META[item.metric]?.precision ?? 1)}</td>
             <td class="mono">${Math.abs(item.z_score).toFixed(2)} sigma</td>
             <td><span class="direction-pill ${directionUp ? "pill-up" : "pill-down"}">${directionLabel}</span></td>
             <td class="mono">${formatObservedTime(item.reading_time)}</td>
@@ -1703,19 +1934,12 @@
       }).join("");
     }
 
-    function colorMix(hex, alpha) {
-      const clean = hex.replace("#", "");
-      const r = parseInt(clean.slice(0, 2), 16);
-      const g = parseInt(clean.slice(2, 4), 16);
-      const b = parseInt(clean.slice(4, 6), 16);
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    }
-
     function selectCity(city) {
       selectedCity = city;
+      applyTheme();
+      renderMasthead();
       renderCities();
-      renderHero();
-      renderFocusPanel();
+      renderFocus();
       renderNetworkChart();
     }
 
@@ -1731,6 +1955,19 @@
       return response.json();
     }
 
+    function renderAll() {
+      applyTheme();
+      renderMasthead();
+      renderSummary();
+      renderCities();
+      renderFocus();
+      renderNetworkChart();
+      renderMovers();
+      renderHotspots();
+      renderFreshness();
+      renderAnomalies();
+    }
+
     async function refresh() {
       try {
         const [current, trends, anomalies] = await Promise.all([
@@ -1744,24 +1981,17 @@
         anomalyData = anomalies;
 
         if (!selectedCity || !currentData.some(item => item.location === selectedCity)) {
-          const hottest = sortCurrentByMetric("temperature_c")[0];
-          selectedCity = hottest ? hottest.location : null;
+          selectedCity = sortCurrentByMetric(selectedMetric)[0]?.location || currentData[0]?.location || null;
         }
 
-        renderHero();
-        renderMetrics();
-        renderCities();
-        renderFocusPanel();
-        renderNetworkChart();
-        renderRanking();
-        renderHotspots();
-        renderAnomalies();
-
+        renderAll();
         document.getElementById("last-update").textContent = formatClockTime(Date.now());
       } catch (error) {
         document.getElementById("last-update").textContent = "Update failed";
-        document.getElementById("hero-alert-state").textContent = "Offline";
-        document.getElementById("hero-footnote").textContent = "The front-end could not refresh data from the Flask API.";
+        document.getElementById("scene-network-state").textContent = "Offline";
+        document.getElementById("scene-alert-state").textContent = "Offline";
+        document.getElementById("scene-copy").textContent = "The dashboard could not refresh data from the Flask API.";
+        document.getElementById("scene-foot").textContent = "Check the server connection or the database-backed API endpoints.";
       }
     }
 
@@ -1769,15 +1999,20 @@
       const button = event.target.closest(".metric-switch");
       if (!button) return;
       selectedMetric = button.dataset.metric;
+      if (!selectedCity && currentData.length) {
+        selectedCity = sortCurrentByMetric(selectedMetric)[0]?.location || currentData[0].location;
+      }
       applyMetricSwitches();
+      renderCities();
       renderNetworkChart();
-      renderRanking();
+      renderMovers();
+      renderFocus();
     });
 
-    tick();
+    renderClock();
     applyMetricSwitches();
     refresh();
-    setInterval(tick, 1000);
+    setInterval(renderClock, 1000);
     setInterval(refresh, 60000);
   </script>
 </body>
