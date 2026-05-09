@@ -13,7 +13,27 @@ def get_conn():
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template(
+        "index.html",
+        refresh_seconds=config.DASHBOARD_REFRESH_SECONDS,
+    )
+
+
+@app.route("/health")
+def health():
+    """Lightweight health check for the app and database connection."""
+    conn = None
+    try:
+        conn = get_conn()
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1")
+            cur.fetchone()
+        return jsonify({"status": "ok", "database": "connected"}), 200
+    except psycopg2.Error as exc:
+        return jsonify({"status": "degraded", "database": "unavailable", "error": str(exc)}), 503
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 @app.route("/api/current")
@@ -99,4 +119,4 @@ def api_anomalies():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5050)
+    app.run(host=config.APP_HOST, port=config.APP_PORT, debug=True)
